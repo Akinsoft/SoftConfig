@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.akinsoft.MoulConfig</groupId>
+  <artifactId>modern-26.2</artifactId>
+  <version>4.7.2-skysoft.1</version>
+  <licenses>
+    <license>
+      <name>LGPL-3.0 or later</name>
+      <url>https://github.com/NotEnoughUpdates/NotEnoughUpdates/blob/HEAD/COPYING.LESSER</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>NotEnoughUpdates contributors</name>
+    </developer>
+    <developer>
+      <name>Linnea Gräf</name>
+    </developer>
+  </developers>
+  <scm>
+    <url>https://github.com/akinsoft/MoulConfig</url>
+  </scm>
+</project>
