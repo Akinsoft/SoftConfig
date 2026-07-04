@@ -2,3 +2,5 @@ jdk:
   - openjdk21
 env:
   CI: true
+install:
+  - ./gradlew --no-daemon :common:publishToMavenLocal :modern:modern-26.1:publishToMavenLocal :modern:modern-26.2:publishToMavenLocal -Pmoulconfig.publishGroup=$GROUP.$ARTIFACT -Pmoulconfig.publishVersion=$VERSION

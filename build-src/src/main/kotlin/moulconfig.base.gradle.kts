@@ -10,8 +10,12 @@ repositories {
 }
 
 
-group = "org.notenoughupdates.moulconfig"
-version = if (Version.isSnapshot) "9999.9999.9999" else Version.tag!!
+group = providers.gradleProperty("moulconfig.publishGroup")
+	.orElse("org.notenoughupdates.moulconfig")
+	.get()
+version = providers.gradleProperty("moulconfig.publishVersion")
+	.orElse(if (Version.isSnapshot) "9999.9999.9999" else Version.tag!!)
+	.get()
 
 tasks.withType(JavaCompile::class) {
 	options.encoding = StandardCharsets.UTF_8.name()
@@ -51,7 +55,10 @@ afterEvaluate {
 					}
 				}
 				scm {
-					url.set("https://github.com/NotEnoughUpdates/MoulConfig")
+					url.set(
+						providers.gradleProperty("moulconfig.scmUrl")
+							.orElse("https://github.com/NotEnoughUpdates/MoulConfig")
+					)
 				}
 			}
 		}
