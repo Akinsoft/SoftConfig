@@ -56,6 +56,10 @@ public interface ProcessedOption extends HasDebugLocation {
 
     boolean set(Object value);
 
+    default boolean isVisible() {
+        return true;
+    }
+
     void explicitNotifyChange();
 
     interface HasField {

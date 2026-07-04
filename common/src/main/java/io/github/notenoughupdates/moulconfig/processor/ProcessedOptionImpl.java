@@ -10,6 +10,7 @@ import io.github.notenoughupdates.moulconfig.observer.Property;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.function.Supplier;
 
 public class ProcessedOptionImpl implements ProcessedOption, ProcessedOption.HasField {
     final StructuredText name;
@@ -22,6 +23,7 @@ public class ProcessedOptionImpl implements ProcessedOption, ProcessedOption.Has
     int accordionId = -1;
     boolean isProperty;
     Config config;
+    private Supplier<Boolean> visibilityCondition = () -> true;
 
     public ProcessedOptionImpl(StructuredText name, StructuredText desc, String path, Field field, ProcessedCategory category, Object container, Config config) {
         this.name = name;
@@ -69,6 +71,10 @@ public class ProcessedOptionImpl implements ProcessedOption, ProcessedOption.Has
     @Override
     public GuiOptionEditor getEditor() {
         return editor;
+    }
+
+    void setVisibilityCondition(Supplier<Boolean> visibilityCondition) {
+        this.visibilityCondition = visibilityCondition;
     }
 
     @Override
@@ -138,6 +144,11 @@ public class ProcessedOptionImpl implements ProcessedOption, ProcessedOption.Has
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public boolean isVisible() {
+        return visibilityCondition.get();
     }
 
     @Override

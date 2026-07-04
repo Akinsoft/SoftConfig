@@ -23,10 +23,12 @@ package io.github.notenoughupdates.moulconfig.processor;
 
 import io.github.notenoughupdates.moulconfig.Config;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigVisibleIf;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiOptionEditor;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorAccordion;
 import io.github.notenoughupdates.moulconfig.internal.Warnings;
+import io.github.notenoughupdates.moulconfig.observer.Property;
 import lombok.Getter;
 import lombok.val;
 import lombok.var;
@@ -35,6 +37,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -155,7 +159,66 @@ public class MoulConfigProcessor<T extends Config> implements ConfigStructureRea
         if (!accordion.isEmpty()) {
             processedOption.accordionId = accordion.peek();
         }
+        applyVisibilityCondition(processedOption, baseObject, field);
         return processedOption;
+    }
+
+    private void applyVisibilityCondition(ProcessedOptionImpl processedOption, Object baseObject, Field field) {
+        ConfigVisibleIf visibleIf = field.getAnnotation(ConfigVisibleIf.class);
+        if (visibleIf == null) {
+            return;
+        }
+
+        Field controllingField = findField(baseObject.getClass(), visibleIf.value());
+        if (controllingField == null) {
+            Warnings.warn("@ConfigVisibleIf could not find field " + visibleIf.value() + " for " + field);
+            return;
+        }
+        if (!isBooleanVisibilityField(controllingField)) {
+            Warnings.warn("@ConfigVisibleIf field " + controllingField + " is not a boolean or Property<Boolean>");
+            return;
+        }
+
+        controllingField.setAccessible(true);
+        boolean[] warned = {false};
+        processedOption.setVisibilityCondition(() -> {
+            try {
+                Object value = controllingField.get(baseObject);
+                if (value instanceof Property) {
+                    value = ((Property<?>) value).get();
+                }
+                return Boolean.TRUE.equals(value) == visibleIf.expected();
+            } catch (IllegalAccessException e) {
+                if (!warned[0]) {
+                    Warnings.warn("@ConfigVisibleIf could not read field " + controllingField + " for " + field);
+                    warned[0] = true;
+                }
+                return true;
+            }
+        });
+    }
+
+    private static Field findField(Class<?> type, String fieldName) {
+        Class<?> current = type;
+        while (current != null) {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ignored) {
+                current = current.getSuperclass();
+            }
+        }
+        return null;
+    }
+
+    private static boolean isBooleanVisibilityField(Field field) {
+        if (field.getType() == boolean.class || field.getType() == Boolean.class) {
+            return true;
+        }
+        if (field.getType() != Property.class || !(field.getGenericType() instanceof ParameterizedType)) {
+            return false;
+        }
+        Type propertyType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+        return propertyType == Boolean.class || propertyType == boolean.class;
     }
 
     @Override

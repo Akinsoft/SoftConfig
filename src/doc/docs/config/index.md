@@ -69,6 +69,49 @@ public class MySubCategory {
 }
 ```
 
+### Conditional visibility
+
+Use [`@ConfigVisibleIf`](../javadocs/common/io.github.notenoughupdates.moulconfig.annotations/-config-visible-if/index.html)
+when one option only matters if another boolean option is enabled. The dependent option is hidden while the condition is
+not met, and it slides open or closed when the controlling option changes.
+
+For example, an existing Kotlin config might look like this:
+
+```kotlin
+@field:Expose
+@field:ConfigOption(name = "Show Progress", desc = "Show progress on screen.")
+@field:ConfigEditorBoolean
+var showProgress = true
+
+@field:Expose
+@field:ConfigOption(name = "Progress Position", desc = "Where the progress display appears.")
+@field:ConfigEditorDropdown
+var progressPosition = ProgressPosition.RIGHT
+```
+
+To hide `progressPosition` unless `showProgress` is enabled, add `@field:ConfigVisibleIf("showProgress")`:
+
+```kotlin
+@field:Expose
+@field:ConfigOption(name = "Show Progress", desc = "Show progress on screen.")
+@field:ConfigEditorBoolean
+var showProgress = true
+
+@field:Expose
+@field:ConfigOption(name = "Progress Position", desc = "Where the progress display appears.")
+@field:ConfigVisibleIf("showProgress")
+@field:ConfigEditorDropdown
+var progressPosition = ProgressPosition.RIGHT
+```
+
+The string is the field name of the boolean option, not the display name. The controlling field must be in the same
+config object as the dependent option. You can also invert the condition, so the option only appears when the toggle is
+off:
+
+```kotlin
+@field:ConfigVisibleIf(value = "showProgress", expected = false)
+```
+
 ### Accordions
 
 Sometimes just subcategories are not enough and you will want to group your options even

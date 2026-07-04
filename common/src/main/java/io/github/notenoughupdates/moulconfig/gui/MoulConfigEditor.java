@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 
 
 public class MoulConfigEditor<T extends Config> extends GuiElement implements CloseEventListener {
+    private static final int OPTION_VISIBILITY_ANIMATION_MS = 180;
+
     private final long openedMillis;
     private final LerpingInteger optionsScroll = new LerpingInteger(0, 150);
     private final LerpingInteger categoryScroll = new LerpingInteger(0, 150);
@@ -82,6 +84,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
     @Getter
     private final @Unmodifiable T configObject;
     private Map<Field, ProcessedOption> optionLookup = new HashMap<>();
+    private final Map<ProcessedOption, LerpingInteger> optionVisibilityHeights = new HashMap<>();
 
     public MoulConfigEditor(MoulConfigProcessor<T> processedConfig) {
         this(
@@ -116,6 +119,45 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         List<ProcessedOption> options = new ArrayList<>(cat.getOptions());
         options.removeIf(it -> !currentlyVisibleOptions.contains(it));
         return options;
+    }
+
+    private int getNaturalOptionHeight(GuiOptionEditor editor) {
+        return ContextAware.wrapErrorWithContext(editor, editor::getHeight);
+    }
+
+    private int getAnimatedOptionHeight(ProcessedOption option, GuiOptionEditor editor) {
+        LerpingInteger animatedHeight = optionVisibilityHeights.get(option);
+        if (animatedHeight == null) {
+            return option.isVisible() ? getNaturalOptionHeight(editor) : 0;
+        }
+        return Math.max(0, animatedHeight.getValue());
+    }
+
+    private int getOptionBottomSpacing(int optionHeight) {
+        return optionHeight > 0 ? 5 : 0;
+    }
+
+    private void tickOptionVisibilityHeights() {
+        for (ProcessedOption option : allOptions) {
+            GuiOptionEditor editor = option.getEditor();
+            if (editor == null) {
+                continue;
+            }
+            editor.setGuiContext(guiContext);
+            int naturalHeight = getNaturalOptionHeight(editor);
+            int targetHeight = option.isVisible() ? naturalHeight : 0;
+            LerpingInteger animatedHeight = optionVisibilityHeights.get(option);
+            if (animatedHeight == null) {
+                optionVisibilityHeights.put(option, new LerpingInteger(targetHeight, OPTION_VISIBILITY_ANIMATION_MS));
+                continue;
+            }
+            if (animatedHeight.getTarget() != targetHeight) {
+                animatedHeight.setTimeToReachTarget(OPTION_VISIBILITY_ANIMATION_MS);
+                animatedHeight.resetTimer();
+                animatedHeight.setTarget(targetHeight);
+            }
+            animatedHeight.tick();
+        }
     }
 
     /**
@@ -155,6 +197,9 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
             if (editor == null) {
                 continue;
             }
+            if (!processedOption.isVisible()) {
+                continue;
+            }
             if (processedOption.getAccordionId() >= 0 && !activeAccordions.contains(processedOption.getAccordionId()))
                 continue;
             if (editor instanceof GuiOptionEditorAccordion) {
@@ -169,7 +214,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 optionsScroll.setTarget(optionY);
                 return true;
             }
-            optionY += ContextAware.wrapErrorWithContext(editor, editor::getHeight) + 5;
+            optionY += getNaturalOptionHeight(editor) + 5;
         }
         return false;
     }
@@ -311,6 +356,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         optionsScroll.tick();
         categoryScroll.tick();
         handleKeyboardPresses();
+        tickOptionVisibilityHeights();
 
         List<StructuredText> tooltipToDisplay = null;
 
@@ -593,7 +639,9 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     continue;
                 }
                 editor.setGuiContext(guiContext);
-                if (editor instanceof GuiOptionEditorAccordion) {
+                int naturalOptionHeight = getNaturalOptionHeight(editor);
+                int optionHeight = getAnimatedOptionHeight(option, editor);
+                if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                     GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                     if (accordion.getToggled()) {
                         int accordionDepth = 0;
@@ -603,17 +651,25 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                     }
                 }
-                int optionHeight = ContextAware.wrapErrorWithContext(editor, editor::getHeight);
+                if (optionHeight <= 0) {
+                    continue;
+                }
                 if (innerTop + 5 + optionY + optionHeight > innerTop + 1 && innerTop + 5 + optionY < innerBottom - 1) {
                     int finalX = (innerLeft + innerRight - optionWidth) / 2 - 5;
                     int finalY = innerTop + 5 + optionY;
                     int finalOptionWidth = optionWidth;
                     ContextAware.wrapErrorWithContext(editor, () -> {
-                        editor.render(context, finalX, finalY, finalOptionWidth);
+                        if (optionHeight < naturalOptionHeight) {
+                            context.pushScissor(finalX, finalY, finalX + finalOptionWidth, finalY + optionHeight);
+                            editor.render(context, finalX, finalY, finalOptionWidth);
+                            context.popScissor();
+                        } else {
+                            editor.render(context, finalX, finalY, finalOptionWidth);
+                        }
                         return null;
                     });
                 }
-                optionY += optionHeight + 5;
+                optionY += optionHeight + getOptionBottomSpacing(optionHeight);
             }
 // TODO: why was this ever needed:             context.disableDepth();
             if (optionY > 0) {
@@ -651,7 +707,9 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     continue;
                 }
                 editor.setGuiContext(guiContext);
-                if (editor instanceof GuiOptionEditorAccordion) {
+                int naturalOptionHeight = getNaturalOptionHeight(editor);
+                int optionHeight = getAnimatedOptionHeight(option, editor);
+                if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                     GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                     if (accordion.getToggled()) {
                         int accordionDepth = 0;
@@ -661,8 +719,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                     }
                 }
-                int optionHeight = ContextAware.wrapErrorWithContext(editor, editor::getHeight);
-                if (innerTop + 5 + optionYOverlay + optionHeight > innerTop + 1 &&
+                if (optionHeight > 0 && option.isVisible() && optionHeight >= naturalOptionHeight &&
+                    innerTop + 5 + optionYOverlay + optionHeight > innerTop + 1 &&
                     innerTop + 5 + optionYOverlay < innerBottom - 1) {
                     int finalX = (innerLeft + innerRight - optionWidth) / 2 - 5;
                     int finalY = innerTop + 5 + optionYOverlay;
@@ -678,7 +736,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         return null;
                     }));
                 }
-                optionYOverlay += optionHeight + 5;
+                optionYOverlay += optionHeight + getOptionBottomSpacing(optionHeight);
             }
             // TODO: why was this ever needed:  context.disableDepth();
             context.popMatrix();
@@ -853,7 +911,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     GuiOptionEditor editor = option.getEditor();
                     if (editor == null) continue;
                     editor.setGuiContext(guiContext);
-                    if (editor instanceof GuiOptionEditorAccordion) {
+                    int optionHeight = getAnimatedOptionHeight(option, editor);
+                    if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                         GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                         if (accordion.getToggled()) {
                             int accordionDepth = 0;
@@ -863,16 +922,19 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                             activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                         }
                     }
+                    if (optionHeight <= 0) {
+                        continue;
+                    }
                     int finalX = (optsInnerLeft + optsInnerRight - optionWidth) / 2 - 5;
                     int finalY = innerTop + 5 + optionY;
                     int finalWidth = optionWidth;
-                    if (ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInputOverlay(
+                    if (option.isVisible() && ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInputOverlay(
                         finalX, finalY, finalWidth, mouseX, mouseY, mouseEvent
                     ))) {
                         overlayConsumedScroll = true;
                         break;
                     }
-                    optionY += ContextAware.wrapErrorWithContext(editor, editor::getHeight) + 5;
+                    optionY += optionHeight + getOptionBottomSpacing(optionHeight);
                 }
             }
         }
@@ -937,7 +999,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                             editor.setGuiContext(guiContext);
                             return null;
                         });
-                        if (editor instanceof GuiOptionEditorAccordion) {
+                        int optionHeight = getAnimatedOptionHeight(option, editor);
+                        if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                             GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                             if (accordion.getToggled()) {
                                 int accordionDepth = 0;
@@ -947,7 +1010,10 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                                 activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                             }
                         }
-                        optionY += ContextAware.wrapErrorWithContext(editor, editor::getHeight) + 5;
+                        if (optionHeight <= 0) {
+                            continue;
+                        }
+                        optionY += optionHeight + getOptionBottomSpacing(optionHeight);
 
                         if (optionY > 0) {
                             barSize = LerpUtils.clampZeroOne((float) (innerBottom - innerTop - 2) / (optionY + 5 + newTarget));
@@ -1021,7 +1087,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     continue;
                 }
                 editor.setGuiContext(guiContext);
-                if (editor instanceof GuiOptionEditorAccordion) {
+                int optionHeight = getAnimatedOptionHeight(option, editor);
+                if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                     GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                     if (accordion.getToggled()) {
                         int accordionDepth = 0;
@@ -1031,10 +1098,13 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                     }
                 }
+                if (optionHeight <= 0) {
+                    continue;
+                }
                 int finalX = (optsInnerLeft + optsInnerRight - optionWidth) / 2 - 5;
                 int finalY = innerTop + 5 + optionY;
                 int finalWidth = optionWidth;
-                if (ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInputOverlay(
+                if (option.isVisible() && ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInputOverlay(
                     finalX,
                     finalY,
                     finalWidth,
@@ -1044,7 +1114,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 ))) {
                     return true;
                 }
-                optionY += ContextAware.wrapErrorWithContext(editor, editor::getHeight) + 5;
+                optionY += optionHeight + getOptionBottomSpacing(optionHeight);
             }
         }
 
@@ -1071,7 +1141,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         continue;
                     }
                     editor.setGuiContext(guiContext);
-                    if (editor instanceof GuiOptionEditorAccordion) {
+                    int optionHeight = getAnimatedOptionHeight(option, editor);
+                    if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                         GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                         if (accordion.getToggled()) {
                             int accordionDepth = 0;
@@ -1081,10 +1152,13 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                             activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                         }
                     }
+                    if (optionHeight <= 0) {
+                        continue;
+                    }
                     int finalX = (optsInnerLeft + optsInnerRight - optionWidth) / 2 - 5;
                     int finalY = innerTop + 5 + optionY;
                     int finalWidth = optionWidth;
-                    if (ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInput(
+                    if (option.isVisible() && ContextAware.wrapErrorWithContext(editor, () -> editor.mouseInput(
                         finalX,
                         finalY,
                         finalWidth,
@@ -1094,7 +1168,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     ))) {
                         handled = true;
                     }
-                    optionY += ContextAware.wrapErrorWithContext(editor, editor::getHeight) + 5;
+                    optionY += optionHeight + getOptionBottomSpacing(optionHeight);
                 }
             }
         }
@@ -1140,7 +1214,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     continue;
                 }
                 editor.setGuiContext(guiContext);
-                if (editor instanceof GuiOptionEditorAccordion) {
+                if (option.isVisible() && editor instanceof GuiOptionEditorAccordion) {
                     GuiOptionEditorAccordion accordion = (GuiOptionEditorAccordion) editor;
                     if (accordion.getToggled()) {
                         int accordionDepth = 0;
@@ -1150,7 +1224,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                         activeAccordions.put(accordion.getAccordionId(), accordionDepth);
                     }
                 }
-                if (ContextAware.wrapErrorWithContext(editor, () -> editor.keyboardInput(event))) {
+                if (option.isVisible() && ContextAware.wrapErrorWithContext(editor, () -> editor.keyboardInput(event))) {
                     return true;
                 }
             }
