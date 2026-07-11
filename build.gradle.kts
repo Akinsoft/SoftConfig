@@ -1,7 +1,6 @@
 import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.plugins.quality.Checkstyle
-import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -208,30 +207,26 @@ val centralBundle by tasks.registering {
         ) {
             "Pass the in-memory signing key with -Psoftconfig.signingKey or SOFTCONFIG_SIGNING_KEY"
         }
-        stagingDirectory.get().asFile.walkTopDown()
-            .filter { it.isFile && it.extension !in setOf("md5", "sha1") }
-            .toList()
-            .forEach { artifact ->
-                mapOf("md5" to "MD5", "sha1" to "SHA-1").forEach { (extension, algorithm) ->
-                    val digest = MessageDigest.getInstance(algorithm).digest(artifact.readBytes())
-                    artifact.parentFile.resolve("${artifact.name}.$extension")
-                        .writeText(digest.joinToString("") { "%02x".format(it) })
-                }
-            }
         val stagingRoot = stagingDirectory.get().asFile
         val output = bundleFile.get().asFile
+        val releasePath = "/${project.version}/"
+        val releaseFile = Regex(".+\\.(jar|pom|module)(\\.asc)?(\\.(md5|sha1|sha256|sha512))?")
+        val artifacts = stagingRoot.walkTopDown()
+            .filter(File::isFile)
+            .filter { releasePath in "/${it.relativeTo(stagingRoot).invariantSeparatorsPath}" }
+            .filter { releaseFile.matches(it.name) }
+            .sortedBy { it.relativeTo(stagingRoot).invariantSeparatorsPath }
+            .toList()
+        check(artifacts.isNotEmpty()) { "No release artifacts found in $stagingRoot" }
         output.parentFile.mkdirs()
         ZipOutputStream(output.outputStream().buffered()).use { zip ->
-            stagingRoot.walkTopDown()
-                .filter(File::isFile)
-                .sortedBy { it.relativeTo(stagingRoot).invariantSeparatorsPath }
-                .forEach { artifact ->
-                    val entry = ZipEntry(artifact.relativeTo(stagingRoot).invariantSeparatorsPath)
-                    entry.time = 0L
-                    zip.putNextEntry(entry)
-                    artifact.inputStream().buffered().use { it.copyTo(zip) }
-                    zip.closeEntry()
-                }
+            artifacts.forEach { artifact ->
+                val entry = ZipEntry(artifact.relativeTo(stagingRoot).invariantSeparatorsPath)
+                entry.time = 0L
+                zip.putNextEntry(entry)
+                artifact.inputStream().buffered().use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
         }
     }
 }
