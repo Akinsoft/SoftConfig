@@ -1,25 +1,76 @@
 name: Release
+
 on:
   push:
-    tags:
-      - '*'
+    tags: ["*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing exact release tag to publish
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
+    environment: maven-central
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.version || github.ref }}
+      - name: Resolve and validate release version
+        id: release
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          version="${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then version="${INPUT_VERSION}"; fi
+          [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          git rev-parse --verify "refs/tags/${version}"
+          [[ "$(git rev-list -n 1 "refs/tags/${version}")" == "$(git rev-parse HEAD)" ]]
+          ! gh release view "${version}" >/dev/null 2>&1
+          curl --fail --silent "https://repo1.maven.org/maven2/io/github/akinsoft/softconfig/common/${version}/common-${version}.pom" >/dev/null && exit 1 || true
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
-          java-version: 21
-      - name: Publish
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+      - name: Re-run validation gates
+        run: ./gradlew check verifyArtifacts mkdocsBuild dokkaGeneratePublicationHtml retainedBuild
+      - name: Build signed Central bundle
         env:
-          ORG_GRADLE_PROJECT_moulconfigPassword: ${{ secrets.MAVENPASS }}
-          ORG_GRADLE_PROJECT_moulconfigUsername: moulconfig
+          ORG_GRADLE_PROJECT_softconfig_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_softconfig_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: ./gradlew centralBundle -Psoftconfig.releaseVersion=${{ steps.release.outputs.version }} -Psoftconfig.stagingDirectory=${{ github.workspace }}/build/central-staging
+      - name: Upload immutable release to Maven Central
+        id: central
+        env:
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
         run: |
-          ./gradlew publish --stacktrace
+          deployment_id=$(curl --fail-with-body --silent --request POST \
+            --header "Authorization: Bearer ${CENTRAL_TOKEN}" \
+            --form "bundle=@build/distributions/softconfig-${{ steps.release.outputs.version }}-central.zip" \
+            "https://central.sonatype.com/api/v1/publisher/upload?name=SoftConfig-${{ steps.release.outputs.version }}&publishingType=AUTOMATIC")
+          echo "deployment-id=${deployment_id}" >> "${GITHUB_OUTPUT}"
+          for attempt in {1..60}; do
+            state=$(curl --fail --silent --request POST --header "Authorization: Bearer ${CENTRAL_TOKEN}" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${deployment_id}" | jq -r .deploymentState)
+            [[ "${state}" == "PUBLISHED" ]] && exit 0
+            [[ "${state}" == "FAILED" ]] && exit 1
+            sleep 30
+          done
+          exit 1
+      - name: Create checksums
+        run: sha256sum build/distributions/softconfig-${{ steps.release.outputs.version }}-central.zip > build/distributions/SHA256SUMS
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ steps.release.outputs.version }}" build/distributions/* --verify-tag --generate-notes --title "SoftConfig ${{ steps.release.outputs.version }}"
