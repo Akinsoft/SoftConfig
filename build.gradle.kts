@@ -2,7 +2,9 @@ import dev.detekt.gradle.Detekt
 import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.plugins.quality.Checkstyle
 import java.security.MessageDigest
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 
 plugins {
 	base
@@ -189,14 +191,13 @@ val verifyArtifacts by tasks.registering {
     }
 }
 
-val centralBundle by tasks.registering(Zip::class) {
+val centralBundle by tasks.registering {
     group = "publishing"
     description = "Builds the signed Maven Central upload bundle."
     val stagingDirectory = layout.buildDirectory.dir("central-staging")
-    from(stagingDirectory)
-    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
-    archiveFileName.set("softconfig-${project.version}-central.zip")
-    doFirst {
+    val bundleFile = layout.buildDirectory.file("distributions/softconfig-${project.version}-central.zip")
+    outputs.file(bundleFile)
+    doLast {
         check(providers.gradleProperty("softconfig.stagingDirectory").isPresent) {
             "Pass -Psoftconfig.stagingDirectory=${stagingDirectory.get().asFile.absolutePath}"
         }
@@ -217,6 +218,21 @@ val centralBundle by tasks.registering(Zip::class) {
                         .writeText(digest.joinToString("") { "%02x".format(it) })
                 }
             }
+        val stagingRoot = stagingDirectory.get().asFile
+        val output = bundleFile.get().asFile
+        output.parentFile.mkdirs()
+        ZipOutputStream(output.outputStream().buffered()).use { zip ->
+            stagingRoot.walkTopDown()
+                .filter(File::isFile)
+                .sortedBy { it.relativeTo(stagingRoot).invariantSeparatorsPath }
+                .forEach { artifact ->
+                    val entry = ZipEntry(artifact.relativeTo(stagingRoot).invariantSeparatorsPath)
+                    entry.time = 0L
+                    zip.putNextEntry(entry)
+                    artifact.inputStream().buffered().use { it.copyTo(zip) }
+                    zip.closeEntry()
+                }
+        }
     }
 }
 

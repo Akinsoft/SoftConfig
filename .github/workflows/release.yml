@@ -57,10 +57,14 @@ jobs:
             "https://central.sonatype.com/api/v1/publisher/upload?name=SoftConfig-${{ steps.release.outputs.version }}&publishingType=AUTOMATIC")
           echo "deployment-id=${deployment_id}" >> "${GITHUB_OUTPUT}"
           for attempt in {1..60}; do
-            state=$(curl --fail --silent --request POST --header "Authorization: Bearer ${CENTRAL_TOKEN}" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=${deployment_id}" | jq -r .deploymentState)
+            status=$(curl --fail --silent --request POST --header "Authorization: Bearer ${CENTRAL_TOKEN}" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${deployment_id}")
+            state=$(jq -r .deploymentState <<< "${status}")
             [[ "${state}" == "PUBLISHED" ]] && exit 0
-            [[ "${state}" == "FAILED" ]] && exit 1
+            if [[ "${state}" == "FAILED" ]]; then
+              jq . <<< "${status}"
+              exit 1
+            fi
             sleep 30
           done
           exit 1
