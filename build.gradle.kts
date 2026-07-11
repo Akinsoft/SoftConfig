@@ -200,8 +200,12 @@ val centralBundle by tasks.registering(Zip::class) {
         check(providers.gradleProperty("softconfig.stagingDirectory").isPresent) {
             "Pass -Psoftconfig.stagingDirectory=${stagingDirectory.get().asFile.absolutePath}"
         }
-        check(providers.gradleProperty("softconfig.signingKey").isPresent) {
-            "Pass the in-memory signing key with -Psoftconfig.signingKey"
+        check(
+            providers.gradleProperty("softconfig.signingKey")
+                .orElse(providers.environmentVariable("SOFTCONFIG_SIGNING_KEY"))
+                .isPresent,
+        ) {
+            "Pass the in-memory signing key with -Psoftconfig.signingKey or SOFTCONFIG_SIGNING_KEY"
         }
         stagingDirectory.get().asFile.walkTopDown()
             .filter { it.isFile && it.extension !in setOf("md5", "sha1") }

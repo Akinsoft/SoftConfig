@@ -92,11 +92,16 @@ afterEvaluate {
     }
 
     extensions.findByType<SigningExtension>()?.apply {
-        val signingKey = providers.gradleProperty("softconfig.signingKey").orNull
-        val signingPassword = providers.gradleProperty("softconfig.signingPassword").orNull
-        if (signingKey != null) {
+        val signingKey = providers.gradleProperty("softconfig.signingKey")
+            .orElse(providers.environmentVariable("SOFTCONFIG_SIGNING_KEY"))
+            .orNull
+        val signingPassword = providers.gradleProperty("softconfig.signingPassword")
+            .orElse(providers.environmentVariable("SOFTCONFIG_SIGNING_PASSWORD"))
+            .orNull
+        val publications = extensions.findByType<PublishingExtension>()?.publications
+        if (signingKey != null && publications != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
-            sign(extensions.getByType<PublishingExtension>().publications)
+            sign(publications)
         }
     }
 }

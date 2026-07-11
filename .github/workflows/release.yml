@@ -43,8 +43,8 @@ jobs:
         run: ./gradlew check verifyArtifacts mkdocsBuild dokkaGeneratePublicationHtml
       - name: Build signed Central bundle
         env:
-          ORG_GRADLE_PROJECT_softconfig_signingKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_softconfig_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+          SOFTCONFIG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SOFTCONFIG_SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: ./gradlew centralBundle -Psoftconfig.releaseVersion=${{ steps.release.outputs.version }} -Psoftconfig.stagingDirectory=${{ github.workspace }}/build/central-staging
       - name: Upload immutable release to Maven Central
         id: central
