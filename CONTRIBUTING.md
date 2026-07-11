@@ -1,42 +1,40 @@
-## Contributing
+# Contributing
 
-Please first do all the standard things you would need to do to PR to a repository on GitHub (Forking, Cloning,
-creating a new branch, adding a remote, etc.).
+SoftConfig accepts focused fixes, compatibility work, tests, documentation, and carefully scoped features.
 
-Then to set up a development environment, just make sure you have a Java 17 and and Java 8 version installed. To
-run the mod in a development environment, just run `./gradlew runClient` (Make sure to run the gradle task directly
-and not an IntelliJ task with a similar name. Otherwise you might need more configuration. Running that very gradle task
-through IntelliJ is fine, however.). Feel free to make changes to the test mod to test your changes.
+## Development setup
 
-When creating a PR, try to have commits which are as atomic as possible.
-This means that when possible, commits should always:
+- Install JDK 25.
+- Use the checked-in Gradle wrapper rather than a system Gradle installation.
+- Run commands from the repository root.
 
- - result in a working state, even without commits that are done further down the line
- - result in a state without any incomplete features. Features that are only used in a later commit are fine, but you
-   can also merge those if you wish.
- - should not be able to be split apart without violating another rule.
-
-These rules are not set in stone, so if you think a commit feels right, just do it. Just remember that your PR will not
-be squashed, so make sure that every commit can land on master
-
-## Creating a release
-
-Github actions automatically generates a new release on our maven for every tag pushed to GitHub, so to create a
-release, just run:
+On Linux or macOS:
 
 ```bash
-git tag "<newVersion>"
-git push origin "<newVersion>"
+./gradlew check
+./gradlew test assemble
 ```
 
-To check which new version to use just check the old version number at [the maven] and go from there. We use semver
-to find the next version, so:
+On Windows:
 
- - For ABI neutral changes, bump the patch version (e.g. only touched internal classes or change of method bodies).
- - For backwards compatible changes, bump the minor version.
- - For breaking changes, bump the major version.
+```powershell
+.\gradlew.bat check
+.\gradlew.bat test assemble
+```
 
-Don't be scared of labeling a breaking change a breaking change, even if it is only a small one. Since people typically
-vendor our library and do not need to be up to date all the time.
+Run the relevant active platform build while working on platform-specific behavior, for example `./gradlew :modern:modern-26.2:assemble`.
 
-[the maven]: https://maven.notenoughupdates.org/#/releases/org/notenoughupdates/moulconfig/MoulConfig
+## Pull requests
+
+- Explain the problem and why the change is needed.
+- Keep changes small and avoid unrelated refactors.
+- Add or update tests for behavioral changes.
+- Preserve SoftConfig 4.x public binary compatibility.
+- Do not commit generated files, build output, credentials, or local environment files.
+- Ensure `check` and the relevant active-version builds pass before requesting review.
+
+Breaking public API changes belong in a future major version and require migration documentation.
+
+## Releases
+
+Releases are created by maintainers from exact version tags after all required checks pass. Published Maven coordinates are immutable and must never be overwritten.

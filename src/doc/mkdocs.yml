@@ -1,12 +1,12 @@
-site_name: MoulConfig
-site_description: MoulConfig is a config library for Minecraft mods with multi version ambitions
-site_author: Linnea Gräf
-site_url: https://notenoughupdates.org/MoulConfig
+site_name: SoftConfig
+site_description: A compatibility-focused configuration library for Minecraft mods
+site_author: SoftConfig contributors
+site_url: https://akinsoft.github.io/SoftConfig/
 
-repo_name: MoulConfig
-repo_url: https://github.com/NotEnoughUpdates/MoulConfig
-edit_uri: edit/v4/src/doc/docs/
-copyright: 'Copyright &copy; 2025 Linnea Gräf'
+repo_name: Akinsoft/SoftConfig
+repo_url: https://github.com/Akinsoft/SoftConfig
+edit_uri: edit/main/src/doc/docs/
+copyright: 'Copyright &copy; 2026 SoftConfig contributors and MoulConfig contributors'
 
 plugins:
   - zettelkasten
@@ -15,7 +15,7 @@ theme:
   name: zettelkasten-solarized-light
   social:
     - type: 'github'
-      link: 'https://github.com/notenoughupdates/moulconfig'
+      link: 'https://github.com/Akinsoft/SoftConfig'
   features:
     - navigation.expand
     - navigation.tabs
@@ -23,15 +23,8 @@ theme:
     - navigation.indexes
     - navigation.top
 
-
 nav:
   - Home:
       - index.md
   - Config:
       - config/index.md
-  - Javadocs:
-      - Home: javadocs/index.html
-      - Common: javadocs/common/index.html
-      - Modern Platform: javadocs/modern/index.html
-      - Legacy Platform: javadocs/legacy/index.html
-      - Annotations: javadocs/common/io.github.notenoughupdates.moulconfig.annotations/index.html
