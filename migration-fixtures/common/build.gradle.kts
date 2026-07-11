@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.akinsoft.softconfig:common:4.8.0")
+    implementation("io.github.akinsoft.softconfig:common:4.8.1")
 }

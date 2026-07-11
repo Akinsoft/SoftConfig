@@ -3,7 +3,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.akinsoft.softconfig:modern-26.2:4.8.0")
+    implementation("io.github.akinsoft.softconfig:modern-26.2:4.8.1")
 }
 
 tasks.shadowJar {

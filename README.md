@@ -15,7 +15,7 @@ SoftConfig 4.x is intended to remain compatible with MoulConfig 4.x. Existing pa
 | 1.21.11 | Active |
 | 26.1 | Active |
 | 26.2 | Active |
-| Other published targets | Best effort |
+| Other targets | Not actively supported; prior releases remain available |
 
 SoftConfig follows Hypixel SkyBlock's update rhythm and normally supports the latest two relevant Minecraft versions. The three active targets above cover the initial transition.
 
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.akinsoft.softconfig:modern-26.2:4.8.0")
+    implementation("io.github.akinsoft.softconfig:modern-26.2:4.8.1")
 }
 ```
 

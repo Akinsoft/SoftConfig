@@ -6,7 +6,7 @@ SoftConfig is not affiliated with or endorsed by NotEnoughUpdates or the origina
 
 ## Installation
 
-Stable releases are published to Maven Central under `io.github.akinsoft.softconfig`. SoftConfig is split into a shared `common` artifact and platform artifacts named `modern-<minecraftVersion>` or `legacy`.
+Stable releases are published to Maven Central under `io.github.akinsoft.softconfig`. SoftConfig is split into a shared `common` artifact and platform artifacts named `modern-<minecraftVersion>`.
 
 ### Modern
 
@@ -18,25 +18,13 @@ repositories {
 }
 
 dependencies {
-    shadowModImpl("io.github.akinsoft.softconfig:modern-26.2:4.8.0")
+    shadowModImpl("io.github.akinsoft.softconfig:modern-26.2:4.8.1")
 }
 
 tasks.shadowJar {
     relocate("io.github.notenoughupdates.moulconfig", "my.mod.deps.moulconfig")
 }
 ```
-
-### Legacy
-
-Legacy 1.8.9 builds remain available on a best-effort basis:
-
-```kotlin
-dependencies {
-    shadowModImpl("io.github.akinsoft.softconfig:legacy:4.8.0")
-}
-```
-
-The development-only `io.github.notenoughupdates.moulconfig.tweaker.DevelopmentResourceTweaker` remains available for legacy development environments.
 
 ## Migrating
 
