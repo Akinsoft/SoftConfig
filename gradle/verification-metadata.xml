@@ -5,6 +5,7 @@
       <verify-signatures>false</verify-signatures>
       <trusted-artifacts>
          <trust group="net[.]minecraft" name="minecraft_(legacy|modern_modern-.*)" regex="true" reason="Generated locally by Unimined from verified Minecraft inputs"/>
+         <trust group="remapped_net[.]fabricmc[.]fabric-api" regex="true" reason="Generated locally by Unimined from verified Fabric API inputs"/>
       </trusted-artifacts>
    </configuration>
    <components>
