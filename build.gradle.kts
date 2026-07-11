@@ -166,7 +166,11 @@ val verifyArtifacts by tasks.registering {
                 check(Regex("\"name\"\\s*:\\s*\"SoftConfig\"").containsMatchIn(metadata)) {
                     "Incorrect Fabric mod name in ${jar.name}"
                 }
-                check(metadata.contains(project.version.toString())) { "Incorrect Fabric version in ${jar.name}" }
+                check(
+                    Regex(
+                        "\\\"version\\\"\\s*:\\s*\\\"${Regex.escape(project.version.toString())}\\\"",
+                    ).containsMatchIn(metadata),
+                ) { "Incorrect Fabric version in ${jar.name}" }
             }
             check(libsDirectory.resolve("$projectName-${project.version}-sources.jar").isFile) {
                 "Missing sources artifact for $projectName"
@@ -259,6 +263,7 @@ gradle.projectsEvaluated {
         })
     }
     centralBundle.configure {
+        dependsOn(verifyArtifacts)
         dependsOn(allprojects.flatMap { candidate ->
             candidate.tasks.matching { it.name == "publishAllPublicationsToCentralStagingRepository" }
         })

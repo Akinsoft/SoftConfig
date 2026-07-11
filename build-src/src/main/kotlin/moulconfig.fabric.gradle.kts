@@ -98,6 +98,7 @@ tasks.named("jar", Jar::class) {
 }
 
 tasks.processResources {
+    inputs.property("softconfigVersion", project.version)
     from(project(":modern").file("templates/resources")) {
         filesMatching("fabric.mod.json") {
             expand("version" to project.version)

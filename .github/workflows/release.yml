@@ -40,7 +40,7 @@ jobs:
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
       - uses: ./.github/actions/setup-gradle
       - name: Re-run validation gates
-        run: ./gradlew check verifyArtifacts mkdocsBuild dokkaGeneratePublicationHtml
+        run: ./gradlew check verifyArtifacts mkdocsBuild dokkaGeneratePublicationHtml -Psoftconfig.releaseVersion=${{ steps.release.outputs.version }}
       - name: Build signed Central bundle
         env:
           SOFTCONFIG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
