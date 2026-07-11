@@ -31,7 +31,6 @@ import io.github.notenoughupdates.moulconfig.processor.ProcessedOption;
 import lombok.var;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Locale;
 

@@ -1,7 +1,14 @@
 package io.github.notenoughupdates.moulconfig.platform;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import io.github.notenoughupdates.moulconfig.common.*;
+import io.github.notenoughupdates.moulconfig.common.ClickType;
+import io.github.notenoughupdates.moulconfig.common.DynamicTextureReference;
+import io.github.notenoughupdates.moulconfig.common.IFontRenderer;
+import io.github.notenoughupdates.moulconfig.common.IItemStack;
+import io.github.notenoughupdates.moulconfig.common.IKeyboardConstants;
+import io.github.notenoughupdates.moulconfig.common.IMinecraft;
+import io.github.notenoughupdates.moulconfig.common.MyResourceLocation;
+import io.github.notenoughupdates.moulconfig.common.RenderContext;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiContext;
 import io.github.notenoughupdates.moulconfig.internal.FilterAssertionCache;
@@ -33,7 +40,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.pattern.TextRenderer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;

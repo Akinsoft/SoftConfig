@@ -1,7 +1,6 @@
 package io.github.notenoughupdates.moulconfig.internal;
 
 import io.github.notenoughupdates.moulconfig.GuiTextures;
-import io.github.notenoughupdates.moulconfig.gui.MoulConfigEditor;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 

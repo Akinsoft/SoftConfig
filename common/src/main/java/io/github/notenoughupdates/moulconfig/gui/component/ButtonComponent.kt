@@ -11,7 +11,7 @@ class ButtonComponent @JvmOverloads constructor(
     element: GuiComponent,
     insets: Int,
     val onClick: Runnable,
-    panel: BackgroundRenderer = DefaultBackgroundRenderer.DARK_RECT
+    panel: BackgroundRenderer = DefaultBackgroundRenderer.DARK_RECT,
 ) : PanelComponent(element, insets, panel) {
     override fun mouseEvent(mouseEvent: MouseEvent, context: GuiImmediateContext): Boolean {
         if (context.isHovered && mouseEvent is Click) {

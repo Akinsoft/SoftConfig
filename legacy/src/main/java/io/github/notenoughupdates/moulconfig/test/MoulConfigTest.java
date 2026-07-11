@@ -21,13 +21,20 @@
 /**/
 package io.github.notenoughupdates.moulconfig.test;
 
-import io.github.notenoughupdates.moulconfig.ChromaColour;
 import io.github.notenoughupdates.moulconfig.common.IItemStack;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.forge.ForgeItemStack;
-import io.github.notenoughupdates.moulconfig.gui.*;
-import io.github.notenoughupdates.moulconfig.gui.component.*;
-import io.github.notenoughupdates.moulconfig.internal.RenderUtils;
+import io.github.notenoughupdates.moulconfig.gui.CloseEventListener;
+import io.github.notenoughupdates.moulconfig.gui.GuiComponentWrapper;
+import io.github.notenoughupdates.moulconfig.gui.GuiContext;
+import io.github.notenoughupdates.moulconfig.gui.GuiScreenElementWrapper;
+import io.github.notenoughupdates.moulconfig.gui.MoulConfigEditor;
+import io.github.notenoughupdates.moulconfig.gui.component.CenterComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.ColumnComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.PanelComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.RowComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.SwitchComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.TextComponent;
 import io.github.notenoughupdates.moulconfig.observer.ObservableList;
 import io.github.notenoughupdates.moulconfig.observer.Property;
 import io.github.notenoughupdates.moulconfig.processor.BuiltinMoulConfigGuis;
@@ -39,9 +46,7 @@ import io.github.notenoughupdates.moulconfig.xml.XMLUniverse;
 import lombok.SneakyThrows;
 import lombok.var;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
@@ -49,13 +54,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.input.Mouse;
 
 import java.util.ArrayList;
 import java.util.Arrays;

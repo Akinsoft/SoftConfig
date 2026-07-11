@@ -1,6 +1,7 @@
 package io.github.notenoughupdates.moulconfig
 
 import com.google.gson.annotations.Expose
+import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -36,9 +37,9 @@ data class ChromaColour(
 ) {
 
     private fun evaluateColourWithShift(hueShift: Double): Int {
-        if (abs(cachedRGBHueOffset - hueShift) < 1 / 360.0) return cachedRGB
+        if (abs(cachedRGBHueOffset - hueShift) < 1 / Timing.HUE_CIRCLE_DEGREES) return cachedRGB
         val effectiveHue = ((hue.toDouble() + hueShift) % 1).toFloat()
-        val ret = (Color.HSBtoRGB(effectiveHue, saturation, brightness) and 0x00FFFFFF) or (alpha shl 24)
+        val ret = (Color.HSBtoRGB(effectiveHue, saturation, brightness) and Rgb.MASK) or (alpha shl Rgb.ALPHA_SHIFT)
         cachedRGBHueOffset = hueShift
         cachedRGB = ret
         return ret
@@ -109,11 +110,11 @@ data class ChromaColour(
     @Deprecated("")
     fun toLegacyString(): String {
         val namedSpeed =
-            if (timeForFullRotationInMillis == 0) 0 else getSpeedForMillis(timeForFullRotationInMillis / 1000f)
+            if (timeForFullRotationInMillis == 0) 0 else getSpeedForMillis(timeForFullRotationInMillis / Timing.MILLIS_PER_SECOND)
         val rgb = evaluateColourWithShift(.0)
-        val red = rgb shr 16 and 0xFF
-        val green = rgb shr 8 and 0xFF
-        val blue = rgb and 0xFF
+        val red = rgb shr Rgb.RED_SHIFT and Rgb.CHANNEL_MASK
+        val green = rgb shr Rgb.GREEN_SHIFT and Rgb.CHANNEL_MASK
+        val blue = rgb and Rgb.CHANNEL_MASK
         return special(namedSpeed, alpha, red, green, blue)
     }
 
@@ -122,20 +123,24 @@ data class ChromaColour(
         @JvmStatic
         @Deprecated("")
         fun special(chromaSpeed: Int, alpha: Int, rgb: Int): String {
-            return special(chromaSpeed, alpha, rgb shr 16 and 0xFF, rgb shr 8 and 0xFF, rgb and 0xFF)
+            return special(
+                chromaSpeed,
+                alpha,
+                rgb shr Rgb.RED_SHIFT and Rgb.CHANNEL_MASK,
+                rgb shr Rgb.GREEN_SHIFT and Rgb.CHANNEL_MASK,
+                rgb and Rgb.CHANNEL_MASK,
+            )
         }
-
-        private const val RADIX: Int = 10
 
         @JvmStatic
         @Deprecated("")
         fun special(chromaSpeed: Int, alpha: Int, r: Int, g: Int, b: Int): String {
             val sb = StringBuilder()
-            sb.append(chromaSpeed.toString(RADIX)).append(":")
-            sb.append(alpha.toString(RADIX)).append(":")
-            sb.append(r.toString(RADIX)).append(":")
-            sb.append(g.toString(RADIX)).append(":")
-            sb.append(b.toString(RADIX))
+            sb.append(chromaSpeed.toString(Legacy.RADIX)).append(":")
+            sb.append(alpha.toString(Legacy.RADIX)).append(":")
+            sb.append(r.toString(Legacy.RADIX)).append(":")
+            sb.append(g.toString(Legacy.RADIX)).append(":")
+            sb.append(b.toString(Legacy.RADIX))
             return sb.toString()
         }
 
@@ -147,9 +152,9 @@ data class ChromaColour(
 
             for (i in split.indices) {
                 try {
-                    arr[i] = split[split.size - 1 - i].toInt(RADIX)
+                    arr[i] = split[split.size - 1 - i].toInt(Legacy.RADIX)
                 } catch (e: NumberFormatException) {
-                    e.printStackTrace()
+                    IMinecraft.INSTANCE.getLogger("ChromaColour").error("Invalid legacy colour value: $csv", e)
                 }
             }
             return arr
@@ -160,23 +165,27 @@ data class ChromaColour(
         fun specialToSimpleRGB(special: String): Int {
             val (b, g, r, a) = decompose(special)
 
-            return (a and 0xFF) shl 24 or ((r and 0xFF) shl 16) or ((g and 0xFF) shl 8) or (b and 0xFF)
+            return (a and Rgb.CHANNEL_MASK) shl Rgb.ALPHA_SHIFT or
+                ((r and Rgb.CHANNEL_MASK) shl Rgb.RED_SHIFT) or
+                ((g and Rgb.CHANNEL_MASK) shl Rgb.GREEN_SHIFT) or
+                (b and Rgb.CHANNEL_MASK)
         }
 
         @JvmStatic
         @Deprecated("")
-        fun getSpeed(special: String): Int = decompose(special)[4]
-
-        private const val MIN_CHROMA_SECS: Int = 1
-        private const val MAX_CHROMA_SECS: Int = 60
+        fun getSpeed(special: String): Int = decompose(special)[Legacy.CHROMA_INDEX]
 
         @JvmStatic
         @Deprecated("")
-        fun getSecondsForSpeed(speed: Int): Float = (255 - speed) / 254f * (MAX_CHROMA_SECS - MIN_CHROMA_SECS) + MIN_CHROMA_SECS
+        fun getSecondsForSpeed(speed: Int): Float =
+            (Rgb.MAX_CHANNEL_VALUE - speed) / Legacy.SPEED_RANGE *
+                (Timing.MAX_CHROMA_SECS - Timing.MIN_CHROMA_SECS) + Timing.MIN_CHROMA_SECS
 
         @Deprecated("")
         fun getSpeedForMillis(seconds: Float): Int {
-            return (255 - ((seconds - MIN_CHROMA_SECS) / (MAX_CHROMA_SECS - MIN_CHROMA_SECS) * 254)).roundToInt()
+            val normalizedSpeed = (seconds - Timing.MIN_CHROMA_SECS) /
+                (Timing.MAX_CHROMA_SECS - Timing.MIN_CHROMA_SECS) * Legacy.SPEED_RANGE
+            return (Rgb.MAX_CHANNEL_VALUE - normalizedSpeed).roundToInt()
         }
 
         @JvmStatic
@@ -188,42 +197,48 @@ data class ChromaColour(
 
             if (chr > 0) {
                 val seconds = getSecondsForSpeed(chr)
-                hsv[0] += (((System.currentTimeMillis().toDouble()) / 1000.0 / seconds) % 1).toFloat()
+                hsv[0] += ((System.currentTimeMillis().toDouble() / Timing.MILLIS_PER_SECOND / seconds) % 1).toFloat()
                 hsv[0] %= 1f
                 if (hsv[0] < 0) hsv[0] += 1f
             }
 
-            return (a and 0xFF) shl 24 or (Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]) and 0x00FFFFFF)
+            return (a and Rgb.CHANNEL_MASK) shl Rgb.ALPHA_SHIFT or (Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]) and Rgb.MASK)
         }
 
         @JvmStatic
         @Deprecated("")
         fun rotateHue(argb: Int, degrees: Int): Int {
-            val a = (argb shr 24) and 0xFF
-            val r = (argb shr 16) and 0xFF
-            val g = (argb shr 8) and 0xFF
-            val b = (argb) and 0xFF
+            val a = (argb shr Rgb.ALPHA_SHIFT) and Rgb.CHANNEL_MASK
+            val r = (argb shr Rgb.RED_SHIFT) and Rgb.CHANNEL_MASK
+            val g = (argb shr Rgb.GREEN_SHIFT) and Rgb.CHANNEL_MASK
+            val b = argb and Rgb.CHANNEL_MASK
 
             val hsv = Color.RGBtoHSB(r, g, b, null)
 
-            hsv[0] += degrees / 360f
+            hsv[0] += degrees / Timing.HUE_CIRCLE_DEGREES.toFloat()
             hsv[0] %= 1f
 
-            return (a and 0xFF) shl 24 or (Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]) and 0x00FFFFFF)
+            return (a and Rgb.CHANNEL_MASK) shl Rgb.ALPHA_SHIFT or (Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]) and Rgb.MASK)
         }
 
         @JvmStatic
         @Deprecated("")
         fun forLegacyString(stringRepresentation: String): ChromaColour {
             val d = decompose(stringRepresentation)
-            assert(d.size == 5)
+            assert(d.size == Legacy.FIELD_COUNT)
 
-            val chr = d[4]
-            val a = d[3]
-            val r = d[2]
-            val g = d[1]
-            val b = d[0]
-            return fromRGB(r, g, b, if (chr > 0) (getSecondsForSpeed(chr) * 1000).toInt() else 0, a)
+            val chr = d[Legacy.CHROMA_INDEX]
+            val a = d[Legacy.ALPHA_INDEX]
+            val r = d[Legacy.RED_INDEX]
+            val g = d[Legacy.GREEN_INDEX]
+            val b = d[Legacy.BLUE_INDEX]
+            return fromRGB(
+                r,
+                g,
+                b,
+                if (chr > 0) (getSecondsForSpeed(chr) * Timing.MILLIS_PER_SECOND).toInt() else 0,
+                a,
+            )
         }
 
         @JvmStatic
@@ -233,6 +248,33 @@ data class ChromaColour(
         fun fromRGB(r: Int, g: Int, b: Int, chromaSpeedMillis: Int, a: Int): ChromaColour {
             val floats = Color.RGBtoHSB(r, g, b, null)
             return ChromaColour(floats[0], floats[1], floats[2], chromaSpeedMillis, a)
+        }
+
+        private object Rgb {
+            const val MASK = 0x00FFFFFF
+            const val CHANNEL_MASK = 0xFF
+            const val ALPHA_SHIFT = 24
+            const val RED_SHIFT = 16
+            const val GREEN_SHIFT = 8
+            const val MAX_CHANNEL_VALUE = 255
+        }
+
+        private object Timing {
+            const val HUE_CIRCLE_DEGREES = 360.0
+            const val MILLIS_PER_SECOND = 1000F
+            const val MIN_CHROMA_SECS = 1
+            const val MAX_CHROMA_SECS = 60
+        }
+
+        private object Legacy {
+            const val RADIX = 10
+            const val SPEED_RANGE = 254F
+            const val FIELD_COUNT = 5
+            const val CHROMA_INDEX = 4
+            const val ALPHA_INDEX = 3
+            const val RED_INDEX = 2
+            const val GREEN_INDEX = 1
+            const val BLUE_INDEX = 0
         }
     }
 }

@@ -13,10 +13,12 @@ import java.util.function.BiFunction
 import java.util.function.Consumer
 
 class ManagedConfig<T : Config>(private val builder: ManagedConfigBuilder<T>) :
-    ManagedDataFile<T>(builder.apply {
-        afterLoad = Consumer<ManagedDataFile<T>> { (it as ManagedConfig<T>).rebuildConfigProcessor(builder) }
-            .andThen(afterLoad)
-    }) {
+    ManagedDataFile<T>(
+        builder.apply {
+            afterLoad = Consumer<ManagedDataFile<T>> { (it as ManagedConfig<T>).rebuildConfigProcessor(builder) }
+                .andThen(afterLoad)
+        }
+    ) {
 
     companion object {
         @JvmStatic
@@ -24,7 +26,7 @@ class ManagedConfig<T : Config>(private val builder: ManagedConfigBuilder<T>) :
         fun <T : Config> create(
             file: File,
             clazz: Class<T>,
-            consumer: (ManagedConfigBuilder<T>.() -> Unit) = {}
+            consumer: (ManagedConfigBuilder<T>.() -> Unit) = {},
         ): ManagedConfig<T> {
             return ManagedConfig(ManagedConfigBuilder(file, clazz).apply(consumer))
         }
@@ -52,7 +54,7 @@ class ManagedConfig<T : Config>(private val builder: ManagedConfigBuilder<T>) :
     private inline fun <A : Annotation> cast(
         processor: MoulConfigProcessor<T>,
         annotation: Class<A>,
-        method: Any
+        method: Any,
     ) {
         @Suppress("UNCHECKED_CAST")
         processor.registerConfigEditor(

@@ -3,11 +3,14 @@ package io.github.notenoughupdates.moulconfig.gui
 import io.github.notenoughupdates.moulconfig.gui.component.TextFieldComponent
 import io.github.notenoughupdates.moulconfig.observer.GetSetter
 
+private const val DEFAULT_WIDTH = 20
+private const val FIELD_HEIGHT = 18
+
 class ClassResizableTextField(text: GetSetter<String>) : TextFieldComponent(
     text,
-    20,
+    DEFAULT_WIDTH,
 ) {
-    private var width = 20
+    private var width = DEFAULT_WIDTH
 
     fun setWidth(width: Int) {
         this.width = width
@@ -18,15 +21,15 @@ class ClassResizableTextField(text: GetSetter<String>) : TextFieldComponent(
     }
 
     override fun render(context: GuiImmediateContext) {
-        super.render(context.translated(0, 0, width, 18))
+        super.render(context.translated(0, 0, width, FIELD_HEIGHT))
     }
 
     override fun mouseEvent(mouseEvent: MouseEvent, context: GuiImmediateContext): Boolean {
-        return super.mouseEvent(mouseEvent, context.translated(0, 0, width, 18))
+        return super.mouseEvent(mouseEvent, context.translated(0, 0, width, FIELD_HEIGHT))
     }
 
     override fun keyboardEvent(event: KeyboardEvent, context: GuiImmediateContext): Boolean {
-        return super.keyboardEvent(event, context.translated(0, 0, width, 18))
+        return super.keyboardEvent(event, context.translated(0, 0, width, FIELD_HEIGHT))
     }
 
 }

@@ -21,7 +21,7 @@ class ManagedConfigBuilder<T>(file: File, clazz: Class<T>) : ManagedDataFileBuil
 
     fun <A : Annotation> customProcessor(
         annotation: Class<A>,
-        editorGenerator: BiFunction<ProcessedOption, in A, GuiOptionEditor>
+        editorGenerator: BiFunction<ProcessedOption, in A, GuiOptionEditor>,
     ) {
         @Suppress("UNCHECKED_CAST")
         customProcessors.add(

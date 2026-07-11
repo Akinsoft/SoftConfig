@@ -8,6 +8,16 @@ import io.github.notenoughupdates.moulconfig.observer.GetSetter
 import kotlin.math.max
 import kotlin.math.min
 
+private const val SLIDER_HEIGHT = 16
+private const val CAP_WIDTH = 4
+private const val CAP_THRESHOLD = 5
+private const val NOTCH_COUNT = 4
+private const val NOTCH_OFFSET = 1
+private const val NOTCH_WIDTH = 2
+private const val NOTCH_HEIGHT = 4
+private const val BUTTON_OFFSET = 4
+private const val BUTTON_WIDTH = 8
+
 open class SliderComponent(
     val value: GetSetter<Float>,
     val minValue: Float,
@@ -21,7 +31,7 @@ open class SliderComponent(
     }
 
     override fun getHeight(): Int {
-        return 16
+        return SLIDER_HEIGHT
     }
 
     override fun render(context: GuiImmediateContext) {
@@ -29,31 +39,51 @@ open class SliderComponent(
             setValueFromContext(context)
         }
         val value: Float = value.get()
-        context.renderContext.drawTexturedRect(GuiTextures.SLIDER_ON_CAP, 0F, 0F, 4F, context.height.toFloat())
-        context.renderContext.drawTexturedRect(GuiTextures.SLIDER_OFF_CAP, (context.width - 4).toFloat(), 0F, 4F, context.height.toFloat())
+        context.renderContext.drawTexturedRect(
+            GuiTextures.SLIDER_ON_CAP, 0F, 0F, CAP_WIDTH.toFloat(), context.height.toFloat()
+        )
+        context.renderContext.drawTexturedRect(
+            GuiTextures.SLIDER_OFF_CAP,
+            (context.width - CAP_WIDTH).toFloat(),
+            0F,
+            CAP_WIDTH.toFloat(),
+            context.height.toFloat()
+        )
         val sliderPosition = ((value.coerceIn(minValue..maxValue) - minValue) / (maxValue - minValue) * context.width).toInt()
-        if (sliderPosition > 5) {
-            context.renderContext.drawTexturedRect(GuiTextures.SLIDER_ON_SEGMENT, 4F, 0F, (sliderPosition - 4).toFloat(), context.height.toFloat())
+        if (sliderPosition > CAP_THRESHOLD) {
+            context.renderContext.drawTexturedRect(
+                GuiTextures.SLIDER_ON_SEGMENT,
+                CAP_WIDTH.toFloat(),
+                0F,
+                (sliderPosition - CAP_WIDTH).toFloat(),
+                context.height.toFloat()
+            )
         }
-        if (sliderPosition < context.width - 5) {
+        if (sliderPosition < context.width - CAP_THRESHOLD) {
             context.renderContext.drawTexturedRect(
                 GuiTextures.SLIDER_OFF_SEGMENT,
                 sliderPosition.toFloat(),
                 0F,
-                (context.width - 4 - sliderPosition).toFloat(),
+                (context.width - CAP_WIDTH - sliderPosition).toFloat(),
                 context.height.toFloat()
             )
         }
-        for (i in 0..3) {
-            val notchX = context.width * i / 4 - 1
+        for (i in 0 until NOTCH_COUNT) {
+            val notchX = context.width * i / NOTCH_COUNT - NOTCH_OFFSET
             context.renderContext.drawTexturedRect(
                 if (notchX > sliderPosition) GuiTextures.SLIDER_OFF_NOTCH else GuiTextures.SLIDER_ON_NOTCH,
-                notchX.toFloat(), (context.height - 4) / 2F, 2F, 4F
+                notchX.toFloat(),
+                (context.height - NOTCH_HEIGHT) / 2F,
+                NOTCH_WIDTH.toFloat(),
+                NOTCH_HEIGHT.toFloat()
             )
         }
         context.renderContext.drawTexturedRect(
             GuiTextures.SLIDER_BUTTON,
-            (sliderPosition - 4).toFloat(), 0F, 8F, context.height.toFloat()
+            (sliderPosition - BUTTON_OFFSET).toFloat(),
+            0F,
+            BUTTON_WIDTH.toFloat(),
+            context.height.toFloat()
         )
     }
 
@@ -76,4 +106,5 @@ open class SliderComponent(
         }
         return false
     }
+
 }

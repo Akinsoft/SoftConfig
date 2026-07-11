@@ -9,6 +9,11 @@ import io.github.notenoughupdates.moulconfig.observer.GetSetter
 import java.util.function.BiFunction
 import kotlin.math.max
 
+private const val SLIDER_INSET = 10
+private const val INPUT_GAP = 10
+private const val INPUT_HEIGHT = 18
+private const val MIN_SLIDER_WIDTH = 35
+
 open class SliderWithTextComponent(
     value: GetSetter<Float>,
     minValue: Float,
@@ -107,10 +112,4 @@ open class SliderWithTextComponent(
         return visitor.apply(componentNumberInput, initial)
     }
 
-    private companion object {
-        private const val SLIDER_INSET = 10
-        private const val INPUT_GAP = 10
-        private const val INPUT_HEIGHT = 18
-        private const val MIN_SLIDER_WIDTH = 35
-    }
 }

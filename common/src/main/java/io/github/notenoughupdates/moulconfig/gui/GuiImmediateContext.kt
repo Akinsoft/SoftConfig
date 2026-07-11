@@ -77,10 +77,8 @@ data class GuiImmediateContext constructor(
      */
     val mouseYHF: Float,
 ) {
+    /** Check if the mouse is positioned within this context. */
     val isHovered: Boolean
-        /**
-         * Check if the mouse is positioned within this context.
-         */
         get() = mouseX in 0 until width && mouseY in 0 until height
 
     /**

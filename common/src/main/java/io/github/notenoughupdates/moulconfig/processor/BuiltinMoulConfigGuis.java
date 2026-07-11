@@ -21,10 +21,29 @@
 /**/
 package io.github.notenoughupdates.moulconfig.processor;
 
-import io.github.notenoughupdates.moulconfig.annotations.*;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorAccordion;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorColour;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorInfoText;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigLink;
 import io.github.notenoughupdates.moulconfig.common.IMinecraft;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
-import io.github.notenoughupdates.moulconfig.gui.editors.*;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorAccordion;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorBoolean;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorButton;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorColour;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorDraggableList;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorDropdown;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorInfoText;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorKeybind;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorSlider;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorText;
 import lombok.val;
 
 import java.lang.reflect.Field;

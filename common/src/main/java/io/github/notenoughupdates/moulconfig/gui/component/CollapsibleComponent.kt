@@ -8,40 +8,44 @@ import io.github.notenoughupdates.moulconfig.gui.MouseEvent
 import io.github.notenoughupdates.moulconfig.observer.GetSetter
 import java.util.function.Supplier
 
+private const val PADDING = 2
+private const val TRIM = 3
+private const val ICON_WIDTH = 9
+
 class CollapsibleComponent(
     val title: Supplier<GuiComponent>,
     val body: Supplier<GuiComponent>,
     val collapsedState: GetSetter<Boolean> = GetSetter.floating(
         true
-    )
+    ),
 ) : GuiComponent() {
 
     companion object {
         val fr = IMinecraft.INSTANCE.defaultFontRenderer
-        val padding = 2
-        val trim = 3
-        val iconWidth = 9
+        val padding: Int get() = PADDING
+        val trim: Int get() = TRIM
+        val iconWidth: Int get() = ICON_WIDTH
     }
 
     override fun getWidth(): Int {
-        return maxOf(title.get().width + padding + iconWidth, body.get().width)
+        return maxOf(title.get().width + PADDING + ICON_WIDTH, body.get().width)
     }
 
     override fun getHeight(): Int {
         return if (collapsedState.get()) {
             maxOf(title.get().height, fr.height)
         } else {
-            maxOf(title.get().height, fr.height) + trim + body.get().height
+            maxOf(title.get().height, fr.height) + TRIM + body.get().height
         }
     }
 
     override fun render(context: GuiImmediateContext) {
         val collapsed = collapsedState.get()
-        context.renderContext.drawOpenCloseTriangle(!collapsed, 0F, 0F, iconWidth.toFloat(), iconWidth.toFloat(), -1)
+        context.renderContext.drawOpenCloseTriangle(!collapsed, 0F, 0F, ICON_WIDTH.toFloat(), ICON_WIDTH.toFloat(), -1)
         val barHeight = maxOf(title.get().height, fr.height)
         context.renderContext.pushMatrix()
-        context.renderContext.translate(iconWidth.toFloat(), 0F)
-        title.get().render(context.translated(iconWidth, 0, context.width - iconWidth, barHeight))
+        context.renderContext.translate(ICON_WIDTH.toFloat(), 0F)
+        title.get().render(context.translated(ICON_WIDTH, 0, context.width - ICON_WIDTH, barHeight))
         context.renderContext.popMatrix()
 
         if (!collapsed) {
@@ -78,10 +82,11 @@ class CollapsibleComponent(
         }
 
         return title.get().mouseEvent(
-            mouseEvent, context.translated(
-                iconWidth,
+            mouseEvent,
+            context.translated(
+                ICON_WIDTH,
                 0,
-                context.width - iconWidth,
+                context.width - ICON_WIDTH,
                 barHeight
             )
         ) || body.get().mouseEvent(
@@ -92,10 +97,11 @@ class CollapsibleComponent(
     override fun keyboardEvent(event: KeyboardEvent, context: GuiImmediateContext): Boolean {
         val barHeight = maxOf(title.get().height, fr.height)
         return title.get().keyboardEvent(
-            event, context.translated(
-                iconWidth,
+            event,
+            context.translated(
+                ICON_WIDTH,
                 0,
-                context.width - iconWidth,
+                context.width - ICON_WIDTH,
                 barHeight
             )
         ) || body.get().keyboardEvent(

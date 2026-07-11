@@ -5,7 +5,7 @@ charset = utf-8
 end_of_line = lf
 indent_size = 4
 indent_style = space
-max_line_length = off
+max_line_length = 140
 trim_trailing_whitespace = true
 insert_final_newline = true
 
@@ -14,6 +14,23 @@ charset = utf-8
 end_of_line = lf
 indent_size = 4
 indent_style = space
-max_line_length = off
+max_line_length = 140
+
+[*.kts]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+max_line_length = 140
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{yml,yaml,json,md,xml}]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
 trim_trailing_whitespace = true
 insert_final_newline = true

@@ -14,13 +14,15 @@ import java.util.function.Supplier
 class MetaComponent(
     val beforeClose: Supplier<CloseEventListener.CloseAction>? = null,
     val afterClose: Runnable? = null,
-    val requestClose: GetSetter<Runnable>? = null
+    val requestClose: GetSetter<Runnable>? = null,
 ) : GuiComponent(), CloseEventListener {
     override fun setContext(context: GuiContext?) {
         super.setContext(context)
-        requestClose?.set(Runnable {
-            context?.requestClose()
-        })
+        requestClose?.set(
+            Runnable {
+                context?.requestClose()
+            }
+        )
     }
 
     override fun onBeforeClose(): CloseEventListener.CloseAction {
@@ -39,6 +41,5 @@ class MetaComponent(
         return 0
     }
 
-    override fun render(context: GuiImmediateContext) {
-    }
+    override fun render(context: GuiImmediateContext) = Unit
 }

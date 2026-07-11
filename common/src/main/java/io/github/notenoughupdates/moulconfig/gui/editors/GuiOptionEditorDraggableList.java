@@ -26,8 +26,17 @@ import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiComponent;
 import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext;
 import io.github.notenoughupdates.moulconfig.gui.MouseEvent;
-import io.github.notenoughupdates.moulconfig.gui.component.*;
-import io.github.notenoughupdates.moulconfig.internal.*;
+import io.github.notenoughupdates.moulconfig.gui.component.ButtonComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.CenterComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.FixedComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.RowComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.SpacerComponent;
+import io.github.notenoughupdates.moulconfig.gui.component.TextComponent;
+import io.github.notenoughupdates.moulconfig.internal.ColourUtil;
+import io.github.notenoughupdates.moulconfig.internal.LerpingInteger2;
+import io.github.notenoughupdates.moulconfig.internal.Rect;
+import io.github.notenoughupdates.moulconfig.internal.TypeUtils;
+import io.github.notenoughupdates.moulconfig.internal.Warnings;
 import io.github.notenoughupdates.moulconfig.observer.GetSetter;
 import io.github.notenoughupdates.moulconfig.processor.ProcessedOption;
 import kotlin.Pair;
@@ -35,7 +44,11 @@ import lombok.var;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GuiOptionEditorDraggableList extends ComponentEditor {

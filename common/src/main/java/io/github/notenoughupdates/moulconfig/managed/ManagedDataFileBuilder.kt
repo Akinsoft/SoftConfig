@@ -6,7 +6,7 @@ import java.util.function.Consumer
 
 open class ManagedDataFileBuilder<T>(
     var file: File,
-    val clazz: Class<T>
+    val clazz: Class<T>,
 ) {
 
     fun throwOnFailure() {

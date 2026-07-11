@@ -12,7 +12,7 @@ import javax.xml.namespace.QName
 class PanelLoader : XMLGuiLoader.Basic<PanelComponent> {
     override fun createInstance(
         context: XMLContext<*>,
-        element: Element
+        element: Element,
     ): PanelComponent {
         return PanelComponent(
             context.getChildFragment(

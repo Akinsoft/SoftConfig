@@ -11,7 +11,7 @@ import javax.xml.namespace.QName
 class RootLoader : XMLGuiLoader.Basic<GuiComponent> {
     override fun createInstance(
         context: XMLContext<*>,
-        element: Element
+        element: Element,
     ): GuiComponent {
         return context.getChildFragment(element)
     }

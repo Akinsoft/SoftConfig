@@ -1,6 +1,11 @@
 package io.github.notenoughupdates.moulconfig.internal
 
-import io.github.notenoughupdates.moulconfig.common.*
+import io.github.notenoughupdates.moulconfig.common.IFontRenderer
+import io.github.notenoughupdates.moulconfig.common.IItemStack
+import io.github.notenoughupdates.moulconfig.common.Layer
+import io.github.notenoughupdates.moulconfig.common.MyResourceLocation
+import io.github.notenoughupdates.moulconfig.common.RenderContext
+import io.github.notenoughupdates.moulconfig.common.TextureFilter
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.notenoughupdates.moulconfig.forge.ForgeItemStack
 import net.minecraft.client.Minecraft
@@ -13,6 +18,9 @@ import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.GL11
 import java.util.function.Consumer
+
+private const val COORDINATES_PER_QUAD = 8
+private const val SCISSOR_WARNING_DEPTH = 4
 
 class ForgeRenderContext : RenderContext {
     override fun pushMatrix() {
@@ -39,8 +47,21 @@ class ForgeRenderContext : RenderContext {
         return Keyboard.isKeyDown(keyboardKey)
     }
 
-    override fun drawString(fontRenderer: IFontRenderer, text: StructuredText, x: Int, y: Int, color: Int, shadow: Boolean) {
-        (fontRenderer as ForgeFontRenderer).font.drawString(StructuredTextImpl.unwrap(text).formattedText, x.toFloat(), y.toFloat(), color, shadow)
+    override fun drawString(
+        fontRenderer: IFontRenderer,
+        text: StructuredText,
+        x: Int,
+        y: Int,
+        color: Int,
+        shadow: Boolean,
+    ) {
+        (fontRenderer as ForgeFontRenderer).font.drawString(
+            StructuredTextImpl.unwrap(text).formattedText,
+            x.toFloat(),
+            y.toFloat(),
+            color,
+            shadow,
+        )
     }
 
 
@@ -57,7 +78,12 @@ class ForgeRenderContext : RenderContext {
     }
 
     fun applyGlobalColor(color: Int) {
-        GlStateManager.color(ColourUtil.unpackARGBRedF(color), ColourUtil.unpackARGBGreenF(color), ColourUtil.unpackARGBBlueF(color), ColourUtil.unpackARGBAlphaF(color))
+        GlStateManager.color(
+            ColourUtil.unpackARGBRedF(color),
+            ColourUtil.unpackARGBGreenF(color),
+            ColourUtil.unpackARGBBlueF(color),
+            ColourUtil.unpackARGBAlphaF(color),
+        )
     }
 
 
@@ -70,7 +96,7 @@ class ForgeRenderContext : RenderContext {
         worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION)
 
         applyGlobalColor(colour)
-        require(coordinates.size % 8 == 0)
+        require(coordinates.size % COORDINATES_PER_QUAD == 0)
         for (i in 0 until (coordinates.size / 2)) {
             worldrenderer.pos(coordinates[i * 2].toDouble(), coordinates[i * 2 + 1].toDouble(), 0.0).endVertex()
         }
@@ -86,7 +112,7 @@ class ForgeRenderContext : RenderContext {
         right: Int,
         bottom: Int,
         startColor: Int,
-        endColor: Int
+        endColor: Int,
     ) {
         RenderUtils.drawGradientRect(
             0,
@@ -116,7 +142,19 @@ class ForgeRenderContext : RenderContext {
         GlStateManager.disableColorLogic()
     }
 
-    override fun drawTexturedTintedRect(texture: MyResourceLocation, x: Float, y: Float, width: Float, height: Float, u1: Float, v1: Float, u2: Float, v2: Float, color: Int, filter: TextureFilter) {
+    override fun drawTexturedTintedRect(
+        texture: MyResourceLocation,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        u1: Float,
+        v1: Float,
+        u2: Float,
+        v2: Float,
+        color: Int,
+        filter: TextureFilter,
+    ) {
         FilterAssertionCache.assertTextureFilter(texture, filter)
         applyGlobalColor(color)
         Minecraft.getMinecraft().textureManager.bindTexture(ForgeMinecraft.fromMyResourceLocation(texture))
@@ -141,7 +179,7 @@ class ForgeRenderContext : RenderContext {
         )
     }
 
-    override fun pushScissor(left: Int, top: Int, right: Int, bottom: Int) { // TODO: make this translate (by reading out the matrix state, sadly)
+    override fun pushScissor(left: Int, top: Int, right: Int, bottom: Int) {
         GlScissorStack.push(
             left,
             top,
@@ -169,7 +207,7 @@ class ForgeRenderContext : RenderContext {
 
     override fun assertNoScissors() {
         if (!GlScissorStack.isEmpty())
-            Warnings.warn("no scissor assertion failed", 4)
+            Warnings.warn("no scissor assertion failed", SCISSOR_WARNING_DEPTH)
     }
 
     override fun clearScissor() {
@@ -221,4 +259,5 @@ class ForgeRenderContext : RenderContext {
     override fun renderExtraLayers() {
         // Left blank: [drawOnTop] renders directly.
     }
+
 }

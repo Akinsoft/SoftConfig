@@ -9,5 +9,5 @@ package io.github.notenoughupdates.moulconfig.annotations
 @Target(AnnotationTarget.FIELD)
 @Repeatable
 annotation class SearchTag(
-    val value: String
+    val value: String,
 )

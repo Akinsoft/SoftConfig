@@ -5,7 +5,6 @@ import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext;
 import io.github.notenoughupdates.moulconfig.gui.KeyboardEvent;
 import io.github.notenoughupdates.moulconfig.gui.MouseEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 
 import java.util.function.BiFunction;
 

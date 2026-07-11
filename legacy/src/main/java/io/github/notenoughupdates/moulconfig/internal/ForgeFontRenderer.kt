@@ -4,7 +4,6 @@ import io.github.notenoughupdates.moulconfig.common.IFontRenderer
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiUtilRenderComponents
-import java.util.regex.Pattern
 
 
 class ForgeFontRenderer(val font: FontRenderer) : IFontRenderer {

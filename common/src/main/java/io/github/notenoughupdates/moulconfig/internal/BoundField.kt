@@ -4,7 +4,7 @@ import java.lang.reflect.Field
 
 data class BoundField(
     val field: Field,
-    val boundTo: Any
+    val boundTo: Any,
 ) {
     override fun toString(): String {
         return "$field bound to $boundTo"

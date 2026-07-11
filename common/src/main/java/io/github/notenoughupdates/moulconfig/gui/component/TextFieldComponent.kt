@@ -20,7 +20,7 @@ open class TextFieldComponent(
     val editable: Supplier<Boolean> = GetSetter.constant(true),
     val suggestion: String = "",
     val font: IFontRenderer = IMinecraft.INSTANCE.defaultFontRenderer,
-    val forbiddenChars: Set<Char> = setOf('§')
+    val forbiddenChars: Set<Char> = setOf('§'),
 ) : GuiComponent() {
     private var cursor = 0
     private var selection = -1
@@ -29,7 +29,9 @@ open class TextFieldComponent(
     private var shouldExpandToFit = false
     private var initializedCursor = false
     override fun getWidth(): Int {
-        if (isFocused && shouldExpandToFit) return max(preferredWidth, font.getStringWidth(StructuredText.of(text.get())) + 10)
+        if (isFocused && shouldExpandToFit) {
+            return max(preferredWidth, font.getStringWidth(StructuredText.of(text.get())) + EXPANSION_PADDING)
+        }
         return preferredWidth
     }
 
@@ -109,7 +111,7 @@ open class TextFieldComponent(
     }
 
     private fun renderCursor(context: GuiImmediateContext) {
-        if (System.currentTimeMillis() / 1000 % 2 == 0L) {
+        if (System.currentTimeMillis() / CURSOR_BLINK_INTERVAL_MILLIS % 2 == 0L) {
             return
         }
         if (cursor < scrollOffset) return
@@ -145,104 +147,93 @@ open class TextFieldComponent(
     }
 
     override fun keyboardEvent(event: KeyboardEvent, context: GuiImmediateContext): Boolean {
-        if (!editable.get()) return false
-        if (!isFocused) return false
-        if (event is KeyboardEvent.KeyPressed && event.pressed) {
-            return when (event.keycode) {
-                KeyboardConstants.left -> {
-                    onDirectionalKey(context, -1)
-                    return true
-                }
-
-                KeyboardConstants.right -> {
-                    onDirectionalKey(context, 1)
-                    return true
-                }
-
-                KeyboardConstants.home, KeyboardConstants.up -> {
-                    if (context.renderContext.isShiftDown) {
-                        if (selection == -1) selection = cursor
-                    } else {
-                        selection = -1
-                    }
-                    cursor = 0
-                    scrollCursorIntoView(context.width)
-                    return true
-                }
-
-                KeyboardConstants.down, KeyboardConstants.end -> {
-                    if (context.renderContext.isShiftDown) {
-                        if (selection == -1) selection = cursor
-                    } else {
-                        selection = -1
-                    }
-                    cursor = text.get().length
-                    scrollCursorIntoView(context.width)
-                    return true
-                }
-
-                KeyboardConstants.backSpace -> {
-                    if (selection == -1) selection = skipCharacters(context.renderContext.isLogicalCtrlDown, -1)
-                    writeText("", context.width)
-                    return true
-                }
-
-                KeyboardConstants.delete -> {
-                    if (selection == -1) selection = skipCharacters(context.renderContext.isLogicalCtrlDown, 1)
-                    writeText("", context.width)
-                    return true
-                }
-
-                KeyboardConstants.keyC -> if (context.renderContext.isLogicalCtrlDown) {
-                    IMinecraft.INSTANCE.copyToClipboard(
-                        getSelection()
-                    )
-                    return true
-                } else {
-                    return false
-                }
-
-                KeyboardConstants.keyX -> if (context.renderContext.isLogicalCtrlDown) {
-                    IMinecraft.INSTANCE.copyToClipboard(
-                        getSelection()
-                    )
-                    writeText("", context.width)
-                    return true
-                } else {
-                    return false
-                }
-
-                KeyboardConstants.keyV -> if (context.renderContext.isLogicalCtrlDown) {
-                    writeText(IMinecraft.INSTANCE.copyFromClipboard(), context.width)
-                    return true
-                } else {
-                    return false
-                }
-
-                KeyboardConstants.keyA -> if (context.renderContext.isLogicalCtrlDown) {
-                    cursor = text.get().length
-                    selection = 0
-                    scrollCursorIntoView(context.width)
-                    return true
-                } else {
-                    return false
-                }
-
-                else -> return false
-            }
-        } else if (event is KeyboardEvent.CharTyped) {
-            val it = event.char
-
-            if (it < ' ' || it.code == 127) return false
-
-            // consume event, so we don't write into the searchbar the moment we type a forbidden char
-            if (forbiddenChars.contains(it)) return true
-
-            writeText(it + "", context.width)
-            return true
-        } else {
-            return false
+        if (!editable.get() || !isFocused) return false
+        return when {
+            event is KeyboardEvent.KeyPressed && event.pressed -> didHandlePressedKey(event, context)
+            event is KeyboardEvent.CharTyped -> didHandleTypedChar(event, context)
+            else -> false
         }
+    }
+
+    private fun didHandlePressedKey(event: KeyboardEvent.KeyPressed, context: GuiImmediateContext): Boolean {
+        return when (event.keycode) {
+            KeyboardConstants.left -> {
+                onDirectionalKey(context, -1)
+                true
+            }
+
+            KeyboardConstants.right -> {
+                onDirectionalKey(context, 1)
+                true
+            }
+
+            KeyboardConstants.home, KeyboardConstants.up -> {
+                if (context.renderContext.isShiftDown) {
+                    if (selection == -1) selection = cursor
+                } else {
+                    selection = -1
+                }
+                cursor = 0
+                scrollCursorIntoView(context.width)
+                true
+            }
+
+            KeyboardConstants.down, KeyboardConstants.end -> {
+                if (context.renderContext.isShiftDown) {
+                    if (selection == -1) selection = cursor
+                } else {
+                    selection = -1
+                }
+                cursor = text.get().length
+                scrollCursorIntoView(context.width)
+                true
+            }
+
+            KeyboardConstants.backSpace -> {
+                if (selection == -1) selection = skipCharacters(context.renderContext.isLogicalCtrlDown, -1)
+                writeText("", context.width)
+                true
+            }
+
+            KeyboardConstants.delete -> {
+                if (selection == -1) selection = skipCharacters(context.renderContext.isLogicalCtrlDown, 1)
+                writeText("", context.width)
+                true
+            }
+
+            KeyboardConstants.keyC,
+            KeyboardConstants.keyX,
+            KeyboardConstants.keyV,
+            KeyboardConstants.keyA,
+            -> didHandleControlShortcut(event.keycode, context)
+            else -> false
+        }
+    }
+
+    private fun didHandleTypedChar(event: KeyboardEvent.CharTyped, context: GuiImmediateContext): Boolean {
+        val char = event.char
+        if (char < ' ' || char.code == DELETE_CHARACTER_CODE) return false
+        if (forbiddenChars.contains(char)) return true
+        writeText(char.toString(), context.width)
+        return true
+    }
+
+    private fun didHandleControlShortcut(keycode: Int, context: GuiImmediateContext): Boolean {
+        if (!context.renderContext.isLogicalCtrlDown) return false
+        when (keycode) {
+            KeyboardConstants.keyC -> IMinecraft.INSTANCE.copyToClipboard(getSelection())
+            KeyboardConstants.keyX -> {
+                IMinecraft.INSTANCE.copyToClipboard(getSelection())
+                writeText("", context.width)
+            }
+            KeyboardConstants.keyV -> writeText(IMinecraft.INSTANCE.copyFromClipboard(), context.width)
+            KeyboardConstants.keyA -> {
+                cursor = text.get().length
+                selection = 0
+                scrollCursorIntoView(context.width)
+            }
+        }
+        return true
     }
 
     private fun getSelection(): String {
@@ -354,5 +345,8 @@ open class TextFieldComponent(
         private const val DISABLED_COLOR = -0x8f8f90
         private const val CURSOR_COLOR = -0x2f2f30
         private const val TEXT_PADDING_Y = 2
+        private const val DELETE_CHARACTER_CODE = 127
+        private const val EXPANSION_PADDING = 10
+        private const val CURSOR_BLINK_INTERVAL_MILLIS = 1000
     }
 }

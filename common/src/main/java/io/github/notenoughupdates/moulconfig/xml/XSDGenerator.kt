@@ -1,9 +1,7 @@
 package io.github.notenoughupdates.moulconfig.xml
 
-import io.github.notenoughupdates.moulconfig.gui.component.PanelComponent
 import org.w3c.dom.Element
 import java.io.File
-import javax.xml.namespace.QName
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -16,7 +14,8 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
         }
         .newDocumentBuilder()
         .newDocument()
-    val XMLNS_XML_SCHEMA: String = "http://www.w3.org/2001/XMLSchema"
+    @get:JvmName("getXMLNS_XML_SCHEMA")
+    val xmlSchemaNamespace: String = "http://www.w3.org/2001/XMLSchema"
     val extraNamespaceMap = run {
         var nextId = 0
         universe.guiElements.values.mapTo(mutableSetOf()) { it.name.namespaceURI }.associate {
@@ -24,7 +23,7 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
             else it to "extrans${nextId++}"
         }
     }
-    val root: Element = document.createElementNS(XMLNS_XML_SCHEMA, "schema")
+    val root: Element = document.createElementNS(xmlSchemaNamespace, "schema")
         .also {
             it.prefix = "xs"
             it.setAttribute(
@@ -82,7 +81,7 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
     @JvmName("createChildInternal")
     private fun Element.createChild(nameSpace: String, local: String): Element {
         val newElement = document.createElementNS(nameSpace, local)
-        if (nameSpace == XMLNS_XML_SCHEMA)
+        if (nameSpace == xmlSchemaNamespace)
             newElement.prefix = "xs"
 
         appendChild(newElement)
@@ -90,31 +89,31 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
     }
 
     fun writeBaseCases() {
-        val anyWidget = root.createChild(XMLNS_XML_SCHEMA, "element")
+        val anyWidget = root.createChild(xmlSchemaNamespace, "element")
         anyWidget.setAttribute("name", "AnyWidget")
         anyWidget.setAttribute("abstract", "true")
-        val widgetLess = root.createChild(XMLNS_XML_SCHEMA, "complexType")
+        val widgetLess = root.createChild(xmlSchemaNamespace, "complexType")
         widgetLess.setAttribute("name", "Widgetless")
-        val singleWidget = root.createChild(XMLNS_XML_SCHEMA, "complexType")
+        val singleWidget = root.createChild(xmlSchemaNamespace, "complexType")
         singleWidget.setAttribute("name", "SingleWidget")
-        singleWidget.createChild(XMLNS_XML_SCHEMA, "sequence").also {
-            it.createChild(XMLNS_XML_SCHEMA, "element")
+        singleWidget.createChild(xmlSchemaNamespace, "sequence").also {
+            it.createChild(xmlSchemaNamespace, "element")
                 .setAttribute("ref", "moulconfig:AnyWidget")
         }
 
-        val multiWidget = root.createChild(XMLNS_XML_SCHEMA, "complexType")
+        val multiWidget = root.createChild(xmlSchemaNamespace, "complexType")
         multiWidget.setAttribute("name", "MultiWidget")
-        multiWidget.createChild(XMLNS_XML_SCHEMA, "sequence").also {
-            it.createChild(XMLNS_XML_SCHEMA, "element")
+        multiWidget.createChild(xmlSchemaNamespace, "sequence").also {
+            it.createChild(xmlSchemaNamespace, "element")
                 .setAttribute("ref", "moulconfig:AnyWidget")
             it.setAttribute("minOccurs", "0")
             it.setAttribute("maxOccurs", "unbounded")
         }
 
-        val twoWidget = root.createChild(XMLNS_XML_SCHEMA, "complexType")
+        val twoWidget = root.createChild(xmlSchemaNamespace, "complexType")
         twoWidget.setAttribute("name", "TwoWidget")
-        twoWidget.createChild(XMLNS_XML_SCHEMA, "sequence").also {
-            it.createChild(XMLNS_XML_SCHEMA, "element")
+        twoWidget.createChild(xmlSchemaNamespace, "sequence").also {
+            it.createChild(xmlSchemaNamespace, "element")
                 .setAttribute("ref", "moulconfig:AnyWidget")
             it.setAttribute("minOccurs", "2")
             it.setAttribute("maxOccurs", "2")
@@ -126,19 +125,20 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
     }
 
     fun writeElement(type: XMLGuiLoader<*>) {
-        val typeNode = root.createChild(XMLNS_XML_SCHEMA, "element")
+        val typeNode = root.createChild(xmlSchemaNamespace, "element")
         typeNode.setAttribute("name", type.name.localPart)
         typeNode.setAttribute("type", type.name.localPart)
         typeNode.setAttribute("substitutionGroup", "moulconfig:AnyWidget")
     }
 
     fun emitBasicType(type: XMLGuiLoader.Basic<*>): Element {
-        val typeNode = root.createChild(XMLNS_XML_SCHEMA, "complexType")
+        val typeNode = root.createChild(xmlSchemaNamespace, "complexType")
         typeNode.setAttribute("name", type.name.localPart)
-        val complexContent = typeNode.createChild(XMLNS_XML_SCHEMA, "complexContent")
-        val extension = complexContent.createChild(XMLNS_XML_SCHEMA, "extension")
+        val complexContent = typeNode.createChild(xmlSchemaNamespace, "complexContent")
+        val extension = complexContent.createChild(xmlSchemaNamespace, "extension")
         extension.setAttribute(
-            "base", when (type.childCount) {
+            "base",
+            when (type.childCount) {
                 ChildCount.NONE -> "moulconfig:Widgetless"
                 ChildCount.ONE -> "moulconfig:SingleWidget"
                 ChildCount.ANY -> "moulconfig:MultiWidget"
@@ -146,7 +146,7 @@ class XSDGenerator(val universe: XMLUniverse, val nameSpace: String) {
             }
         )
         type.attributeNames.forEach { name, required ->
-            val attribute = extension.createChild(XMLNS_XML_SCHEMA, "attribute")
+            val attribute = extension.createChild(xmlSchemaNamespace, "attribute")
             attribute.setAttribute("name", name)
             if (required)
                 attribute.setAttribute("use", "required")

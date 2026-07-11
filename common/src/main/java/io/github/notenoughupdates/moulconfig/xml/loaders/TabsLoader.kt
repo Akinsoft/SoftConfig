@@ -17,10 +17,12 @@ class TabsLoader : XMLGuiLoader<TabComponent> {
             val tabElement = tabElements.item(i) as Element
             val body = tabElement.getElementsByTagName("Tab.Body").item(0) as Element
             val header = tabElement.getElementsByTagName("Tab.Header").item(0) as Element
-            tabs.add(TabComponent.Tab(
-                context.getChildFragment(header),
-                context.getChildFragment(body),
-            ))
+            tabs.add(
+                TabComponent.Tab(
+                    context.getChildFragment(header),
+                    context.getChildFragment(body),
+                )
+            )
         }
         return TabComponent(
             tabs,
@@ -34,29 +36,29 @@ class TabsLoader : XMLGuiLoader<TabComponent> {
     }
 
     override fun emitXSDType(generator: XSDGenerator, root: Element): Element {
-        val typeNode = generator.createChild(root, generator.XMLNS_XML_SCHEMA, "complexType")
+        val typeNode = generator.createChild(root, generator.xmlSchemaNamespace, "complexType")
         typeNode.setAttribute("name", name.localPart)
-        val complexContent = generator.createChild(typeNode, generator.XMLNS_XML_SCHEMA, "complexContent")
-        val extension = generator.createChild(complexContent, generator.XMLNS_XML_SCHEMA, "extension")
+        val complexContent = generator.createChild(typeNode, generator.xmlSchemaNamespace, "complexContent")
+        val extension = generator.createChild(complexContent, generator.xmlSchemaNamespace, "extension")
         extension.setAttribute("base", "Tabs.Content")
-        val attributeTab = generator.createChild(extension, generator.XMLNS_XML_SCHEMA, "attribute")
+        val attributeTab = generator.createChild(extension, generator.xmlSchemaNamespace, "attribute")
         attributeTab.setAttribute("name", "selectedTabIndex")
-        val attributeDefaultTab = generator.createChild(extension, generator.XMLNS_XML_SCHEMA, "attribute")
+        val attributeDefaultTab = generator.createChild(extension, generator.xmlSchemaNamespace, "attribute")
         attributeDefaultTab.setAttribute("name", "initialSelectedTabIndex")
 
-        val childTypeNode = generator.createChild(root, generator.XMLNS_XML_SCHEMA, "complexType")
+        val childTypeNode = generator.createChild(root, generator.xmlSchemaNamespace, "complexType")
         childTypeNode.setAttribute("name", "Tabs.Content")
-        val sequence = generator.createChild(childTypeNode, generator.XMLNS_XML_SCHEMA, "sequence")
+        val sequence = generator.createChild(childTypeNode, generator.xmlSchemaNamespace, "sequence")
         sequence.setAttribute("maxOccurs", "unbounded")
-        val sequenceElement = generator.createChild(sequence, generator.XMLNS_XML_SCHEMA, "element")
+        val sequenceElement = generator.createChild(sequence, generator.xmlSchemaNamespace, "element")
         sequenceElement.setAttribute("name", "Tab")
 
-        val tabType = generator.createChild(sequenceElement, generator.XMLNS_XML_SCHEMA, "complexType")
-        val tabSequence = generator.createChild(tabType, generator.XMLNS_XML_SCHEMA, "sequence")
-        val tabHeader = generator.createChild(tabSequence, generator.XMLNS_XML_SCHEMA, "element")
+        val tabType = generator.createChild(sequenceElement, generator.xmlSchemaNamespace, "complexType")
+        val tabSequence = generator.createChild(tabType, generator.xmlSchemaNamespace, "sequence")
+        val tabHeader = generator.createChild(tabSequence, generator.xmlSchemaNamespace, "element")
         tabHeader.setAttribute("name", "Tab.Header")
         tabHeader.setAttribute("type", "SingleWidget")
-        val tabBody = generator.createChild(tabSequence, generator.XMLNS_XML_SCHEMA, "element")
+        val tabBody = generator.createChild(tabSequence, generator.xmlSchemaNamespace, "element")
         tabBody.setAttribute("name", "Tab.Body")
         tabBody.setAttribute("type", "SingleWidget")
         return typeNode

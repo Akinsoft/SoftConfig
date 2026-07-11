@@ -36,7 +36,7 @@ import io.github.notenoughupdates.moulconfig.observer.GetSetter;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.function.BiFunction;

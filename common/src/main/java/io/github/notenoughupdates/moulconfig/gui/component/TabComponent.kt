@@ -12,7 +12,7 @@ import java.util.function.BiFunction
 
 data class TabComponent(
     val tabs: List<Tab>,
-    val selectedTabIndex: GetSetter<Int>
+    val selectedTabIndex: GetSetter<Int>,
 ) : GuiComponent() {
     data class Tab(
         val header: GuiComponent,
@@ -43,8 +43,10 @@ data class TabComponent(
     }
 
     override fun getWidth(): Int {
-        return maxOf(tabs.maxOf { it.body.width } + 2 * bodyPadding,
-                     initialHeaderOffset + tabs.sumOf { it.header.width + headerSpacing + headerPadding * 2 })
+        return maxOf(
+            tabs.maxOf { it.body.width } + 2 * bodyPadding,
+            initialHeaderOffset + tabs.sumOf { it.header.width + headerSpacing + headerPadding * 2 }
+        )
     }
 
     override fun getHeight(): Int {
@@ -81,7 +83,8 @@ data class TabComponent(
             )
             val child = context.translated(
                 headerOffset + headerPadding, headerPadding,
-                tab.header.width, headerHeight)
+                tab.header.width, headerHeight
+            )
             context.renderContext.pushMatrix()
             context.renderContext.translate(headerOffset + headerPadding + 0F, headerPadding + 0F)
             tab.header.render(child)
@@ -91,7 +94,12 @@ data class TabComponent(
 
         selectedTab ?: return
 
-        val child = context.translated(bodyPadding, headerHeight + bodyPadding, context.width - bodyPadding * 2, context.height - headerHeight - bodyPadding)
+        val child = context.translated(
+            bodyPadding,
+            headerHeight + bodyPadding,
+            context.width - bodyPadding * 2,
+            context.height - headerHeight - bodyPadding,
+        )
         context.renderContext.pushMatrix()
         context.renderContext.translate(bodyPadding + 0F, headerHeight + bodyPadding + 0F)
         selectedTab.body.render(child)
@@ -110,7 +118,8 @@ data class TabComponent(
             }
             val child = context.translated(
                 headerOffset + headerPadding, headerPadding,
-                tab.header.width, headerHeight)
+                tab.header.width, headerHeight
+            )
             if (child.isHovered && mouseEvent is MouseEvent.Click && mouseEvent.mouseState) {
                 if (selectedTabIndex.get() != index) {
                     this.context.setFocusedElement(null)
@@ -123,7 +132,12 @@ data class TabComponent(
 
         selectedTab ?: return false
 
-        val child = context.translated(bodyPadding, headerHeight + bodyPadding, context.width - bodyPadding * 2, context.height - headerHeight - bodyPadding)
+        val child = context.translated(
+            bodyPadding,
+            headerHeight + bodyPadding,
+            context.width - bodyPadding * 2,
+            context.height - headerHeight - bodyPadding,
+        )
         return selectedTab.body.mouseEvent(mouseEvent, child)
     }
 
@@ -140,7 +154,12 @@ data class TabComponent(
 
         selectedTab ?: return false
 
-        val child = context.translated(bodyPadding, headerHeight + bodyPadding, context.width - bodyPadding * 2, context.height - headerHeight - bodyPadding)
+        val child = context.translated(
+            bodyPadding,
+            headerHeight + bodyPadding,
+            context.width - bodyPadding * 2,
+            context.height - headerHeight - bodyPadding,
+        )
         return selectedTab.body.keyboardEvent(event, child)
     }
 }

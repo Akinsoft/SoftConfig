@@ -4,9 +4,19 @@ package io.github.notenoughupdates.moulconfig.platform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 #endif
+#if !MC217
 import com.mojang.blaze3d.vertex.PoseStack;
+#endif
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import io.github.notenoughupdates.moulconfig.common.*;
+import io.github.notenoughupdates.moulconfig.common.IFontRenderer;
+import io.github.notenoughupdates.moulconfig.common.IItemStack;
+#if !MC217
+import io.github.notenoughupdates.moulconfig.common.IMinecraft;
+#endif
+import io.github.notenoughupdates.moulconfig.common.Layer;
+import io.github.notenoughupdates.moulconfig.common.MyResourceLocation;
+import io.github.notenoughupdates.moulconfig.common.RenderContext;
+import io.github.notenoughupdates.moulconfig.common.TextureFilter;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.internal.FilterAssertionCache;
 import io.github.notenoughupdates.moulconfig.internal.Rect;
@@ -25,9 +35,7 @@ import net.minecraft.client.renderer.RenderType;
 #endif
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.locale.Language;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 #if MC217

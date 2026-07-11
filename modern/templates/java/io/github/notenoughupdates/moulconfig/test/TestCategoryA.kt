@@ -2,10 +2,20 @@ package io.github.notenoughupdates.moulconfig.test
 
 import com.google.gson.annotations.Expose
 import io.github.notenoughupdates.moulconfig.ChromaColour
-import io.github.notenoughupdates.moulconfig.annotations.*
+import io.github.notenoughupdates.moulconfig.annotations.Accordion
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorColour
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorInfoText
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText
+import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
+import io.github.notenoughupdates.moulconfig.annotations.ConfigOrder
 import io.github.notenoughupdates.moulconfig.observer.Property
 import org.lwjgl.glfw.GLFW
-import java.util.*
 
 class TestCategoryA {
 
@@ -45,7 +55,7 @@ class TestCategoryA {
     @ConfigOption(name = "Accordion", desc = "")
     var accordion = AccordionClass()
 
-    class AccordionClass() {
+    class AccordionClass {
 
         @ConfigOption(name = "Number Dropdown", desc = "0, 1, 2, 3")
         @ConfigEditorDropdown(values = ["0", "1", "2", "3"])
@@ -191,17 +201,15 @@ class TestCategoryA {
             "donec et odio",
         ]
     )
-    var draggableList: List<Int> = ArrayList(mutableListOf(0, 1, 2, 3))
+    var draggableList: List<Int> = arrayListOf(0, 1, 2, 3)
 
     @Expose
     @ConfigOption(name = "Enum Draggable List", desc = "Draggable list but doesnt work properly.")
     @ConfigEditorDraggableList
-    var enumDraggableList: List<EnumDraggableList> = ArrayList(
-        Arrays.asList(
-            EnumDraggableList.ONE,
-            EnumDraggableList.THREE,
-            EnumDraggableList.TWO,
-        )
+    var enumDraggableList: List<EnumDraggableList> = arrayListOf(
+        EnumDraggableList.ONE,
+        EnumDraggableList.THREE,
+        EnumDraggableList.TWO,
     )
 
     enum class EnumDraggableList(private val str: String) {

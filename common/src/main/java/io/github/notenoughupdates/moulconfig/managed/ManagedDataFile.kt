@@ -34,7 +34,7 @@ open class ManagedDataFile<T> internal constructor(
         fun <T> create(
             file: File,
             clazz: Class<T>,
-            consumer: (ManagedDataFileBuilder<T>.() -> Unit) = {}
+            consumer: (ManagedDataFileBuilder<T>.() -> Unit) = {},
         ): ManagedDataFile<T> {
             return ManagedDataFile(ManagedDataFileBuilder(file, clazz).apply(consumer))
         }
@@ -68,7 +68,7 @@ open class ManagedDataFile<T> internal constructor(
         val jvmHash = ManagementFactory.getRuntimeMXBean().name.hashCode()
         val timestamp = System.currentTimeMillis().toString()
         directory.mkdirs()
-        return directory.resolve("${file.nameWithoutExtension}-${jvmHash}-${timestamp}-$identifier.${file.extension}")
+        return directory.resolve("${file.nameWithoutExtension}-$jvmHash-$timestamp-$identifier.${file.extension}")
     }
 
     fun saveToFile() {

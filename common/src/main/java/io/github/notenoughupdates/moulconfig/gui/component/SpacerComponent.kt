@@ -16,6 +16,5 @@ class SpacerComponent(
         return height.get()
     }
 
-    override fun render(context: GuiImmediateContext) {
-    }
+    override fun render(context: GuiImmediateContext) = Unit
 }

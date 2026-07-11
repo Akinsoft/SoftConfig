@@ -21,7 +21,7 @@ class ScaleComponent(
 
     override fun <T : Any?> foldChildren(
         initial: T,
-        visitor: BiFunction<GuiComponent, T, T>
+        visitor: BiFunction<GuiComponent, T, T>,
     ): T {
         return visitor.apply(child, initial)
     }

@@ -8,7 +8,7 @@ import java.util.function.BiFunction
 import java.util.function.Supplier
 
 open class IndirectComponent(
-    val component: Supplier<out GuiComponent>
+    val component: Supplier<out GuiComponent>,
 ) : GuiComponent() {
     override fun getWidth(): Int {
         return component.get().width
@@ -32,7 +32,7 @@ open class IndirectComponent(
 
     override fun <T : Any?> foldChildren(
         initial: T,
-        visitor: BiFunction<GuiComponent, T, T>
+        visitor: BiFunction<GuiComponent, T, T>,
     ): T {
         return visitor.apply(component.get(), initial)
     }

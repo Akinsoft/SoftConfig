@@ -15,7 +15,7 @@ object NinePatchRenderer : ContextualTextureRenderer<MyResourceLocation, RenderC
         u1: Float,
         v1: Float,
         u2: Float,
-        v2: Float
+        v2: Float,
     ) {
         context.drawComplexTexture(
             texture,

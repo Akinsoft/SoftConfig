@@ -3,7 +3,13 @@ package io.github.notenoughupdates.moulconfig.internal
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText
-import io.github.notenoughupdates.moulconfig.common.*
+import io.github.notenoughupdates.moulconfig.common.ClickType
+import io.github.notenoughupdates.moulconfig.common.DynamicTextureReference
+import io.github.notenoughupdates.moulconfig.common.IFontRenderer
+import io.github.notenoughupdates.moulconfig.common.IKeyboardConstants
+import io.github.notenoughupdates.moulconfig.common.IMinecraft
+import io.github.notenoughupdates.moulconfig.common.MyResourceLocation
+import io.github.notenoughupdates.moulconfig.common.RenderContext
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.notenoughupdates.moulconfig.gui.GuiComponentWrapper
 import io.github.notenoughupdates.moulconfig.gui.GuiContext
@@ -110,7 +116,8 @@ class ForgeMinecraft : IMinecraft {
                         when (type) {
                             ClickType.OPEN_LINK -> ClickEvent.Action.OPEN_URL
                             ClickType.RUN_COMMAND -> ClickEvent.Action.RUN_COMMAND
-                        }, action
+                        },
+                        action
                     )
                 )
         Minecraft.getMinecraft().ingameGUI.chatGUI.printChatMessage(
@@ -142,7 +149,7 @@ class ForgeMinecraft : IMinecraft {
     }
 
     override fun isGeneratedSentinel(resourceLocation: MyResourceLocation): Boolean {
-        return resourceLocation.root == "moulconfigdyn" // technically this will also start with dynamic/ but i dont control that, so i will just use another namespace smilers
+        return resourceLocation.root == "moulconfigdyn"
     }
 
     override fun getKeyName(keyCode: Int): StructuredText {
@@ -197,7 +204,7 @@ class ForgeMinecraft : IMinecraft {
                 .systemClipboard
                 .setContents(StringSelection(string), null)
         } catch (e: Exception) {
-            e.printStackTrace()
+            LOGGER.error("Could not copy text to the clipboard", e)
         }
     }
 
@@ -219,6 +226,8 @@ class ForgeMinecraft : IMinecraft {
     }
 
     companion object {
+        private val LOGGER = LogManager.getLogger(ForgeMinecraft::class.java)
+
         @JvmStatic
         fun fromMyResourceLocation(resourceLocation: MyResourceLocation): ResourceLocation {
             return ResourceLocation(

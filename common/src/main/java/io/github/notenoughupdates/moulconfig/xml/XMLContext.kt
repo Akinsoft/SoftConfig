@@ -25,7 +25,7 @@ class XMLContext<T : Any>(
 
     fun getChildFragment(
         element: Element,
-        rebind: Any
+        rebind: Any,
     ): GuiComponent {
         return CollectionUtils.getSingleOrThrow(
             getChildFragments(element, XMLContext(universe, rebind))
@@ -38,14 +38,14 @@ class XMLContext<T : Any>(
 
     fun getChildFragments(
         element: Element,
-        rebind: Any
+        rebind: Any,
     ): List<GuiComponent> {
         return getChildFragments(element, XMLContext(universe, rebind))
     }
 
     fun getChildFragments(
         element: Element,
-        context: XMLContext<*>
+        context: XMLContext<*>,
     ): List<GuiComponent> {
         val childNodes = element.childNodes
         val list: MutableList<GuiComponent> = ArrayList()
@@ -75,7 +75,7 @@ class XMLContext<T : Any>(
     fun <E> getPropertyFromAttribute(
         element: Element,
         name: QName,
-        type: Class<E>
+        type: Class<E>,
     ): GetSetter<E>? {
         val attributeValue = getRawXMLValue(element, name) ?: return null
         if (attributeValue.startsWith("@")) {
@@ -115,7 +115,7 @@ class XMLContext<T : Any>(
 
     fun <E> getBoundProperty(
         name: String,
-        type: Class<E>
+        type: Class<E>,
     ): GetSetter<E> {
         val propertyFinder = universe.getPropertyFinder(boundObject.javaClass)
         return propertyFinder.getBoundProperty(name, type, boundObject)

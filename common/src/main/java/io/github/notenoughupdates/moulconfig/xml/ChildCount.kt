@@ -5,6 +5,4 @@ enum class ChildCount {
     ONE,
     ANY,
     TWO,
-
-    ;
 }

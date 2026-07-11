@@ -5,7 +5,8 @@ package io.github.notenoughupdates.moulconfig.gui
  */
 interface CloseEventListener {
     enum class CloseAction {
-        NO_OBJECTIONS_TO_CLOSE, DENY_CLOSE, ;
+        NO_OBJECTIONS_TO_CLOSE,
+        DENY_CLOSE, ;
 
         fun or(other: CloseAction): CloseAction {
             if (this == DENY_CLOSE) return this

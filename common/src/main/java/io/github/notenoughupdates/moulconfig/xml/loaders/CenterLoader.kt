@@ -11,7 +11,7 @@ import javax.xml.namespace.QName
 class CenterLoader : XMLGuiLoader.Basic<CenterComponent> {
     override fun createInstance(
         context: XMLContext<*>,
-        element: Element
+        element: Element,
     ): CenterComponent {
         return CenterComponent(
             context.getChildFragment(

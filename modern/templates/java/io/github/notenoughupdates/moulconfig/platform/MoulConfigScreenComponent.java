@@ -2,7 +2,11 @@ package io.github.notenoughupdates.moulconfig.platform;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.notenoughupdates.moulconfig.common.IMinecraft;
-import io.github.notenoughupdates.moulconfig.gui.*;
+import io.github.notenoughupdates.moulconfig.gui.CloseEventListener;
+import io.github.notenoughupdates.moulconfig.gui.GuiContext;
+import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext;
+import io.github.notenoughupdates.moulconfig.gui.KeyboardEvent;
+import io.github.notenoughupdates.moulconfig.gui.MouseEvent;
 import lombok.Getter;
 #if MC < 260100
 import net.minecraft.client.gui.GuiGraphics;
