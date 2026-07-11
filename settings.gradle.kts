@@ -29,18 +29,13 @@ pluginManagement {
 rootProject.name = "SoftConfig"
 
 include("common")
-include("legacy")
 include("modern")
 include("detekt-rules")
-listOf(
-	"1.21.4",
-	"1.21.5",
-	"1.21.7",
-	"1.21.10",
-	"1.21.11",
-    "26.1",
-    "26.2"
-).forEach { version ->
+providers.gradleProperty("softconfig.activeMinecraftVersions").get()
+	.split(",")
+	.map(String::trim)
+	.filter(String::isNotEmpty)
+	.forEach { version ->
 	val modPath = "modern:$version"
 	include(modPath)
 	project(":$modPath").name = "modern-$version"

@@ -41,7 +41,6 @@ tasks.assemble { dependsOn(docJar) }
 
 dependencies {
     dokka(project(":common"))
-    dokka(project(":legacy"))
     dokka(project(":modern"))
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${providers.gradleProperty("detekt.version").get()}")
     detektPlugins(project(":detekt-rules"))
@@ -53,7 +52,6 @@ extensions.configure<DetektExtension> {
     source.setFrom(
         files(
             "common/src/main/java",
-            "legacy/src/main/java",
             "modern/templates/java",
         ),
     )
@@ -79,7 +77,6 @@ val checkstyleAuthored by tasks.registering(Checkstyle::class) {
     dependsOn(prepareModernCheckstyleSource)
     source(
         fileTree("common/src/main/java") { include("**/*.java") },
-        fileTree("legacy/src/main/java") { include("**/*.java") },
         fileTree(layout.buildDirectory.dir("checkstyle-modern-source")) { include("**/*.java") },
     )
     classpath = files()
@@ -128,24 +125,10 @@ val checkBinaryCompatibility by tasks.registering(JavaExec::class) {
     }
 }
 
-val activeMinecraftVersions = listOf("1.21.11", "26.1", "26.2")
-val retainedProjects = listOf(
-    ":legacy",
-    ":modern:modern-1.21.4",
-    ":modern:modern-1.21.5",
-    ":modern:modern-1.21.7",
-    ":modern:modern-1.21.10",
-    ":modern:modern-1.21.11",
-    ":modern:modern-26.1",
-    ":modern:modern-26.2",
-)
-
-val retainedBuild by tasks.registering {
-    group = "verification"
-    description = "Builds legacy and every retained modern target."
-    dependsOn(retainedProjects.map { "$it:build" })
-}
-
+val activeMinecraftVersions = providers.gradleProperty("softconfig.activeMinecraftVersions").get()
+    .split(",")
+    .map(String::trim)
+    .filter(String::isNotEmpty)
 val verifyArtifacts by tasks.registering {
     group = "verification"
     description = "Verifies published artifact metadata, licenses, sources, Javadocs, and POMs."
