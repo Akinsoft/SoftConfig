@@ -33,6 +33,10 @@ val sourcesJar by tasks.creating(Jar::class) {
 	from(project(":common").the<SourceSetContainer>().getByName("main").allSource)
 	archiveClassifier.set("sources")
 }
+val javadocJar by tasks.creating(Jar::class) {
+    from(rootProject.tasks.named("compileAllDocs"))
+    archiveClassifier.set("javadoc")
+}
 tasks.withType<KotlinCompile> {
 	compilerOptions.freeCompilerArgs.add("-Xmetadata-version=2.0.0")
 }
@@ -44,6 +48,9 @@ configure<PublishingExtension> {
 			}
 			artifact(sourcesJar) {
 				classifier = "sources"
+			}
+			artifact(javadocJar) {
+				classifier = "javadoc"
 			}
 		}
 	}

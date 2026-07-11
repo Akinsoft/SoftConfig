@@ -100,6 +100,7 @@ tasks.named("jar", Jar::class) {
 tasks.processResources {
     from(project(":modern").file("templates/resources")) {
         filesMatching("fabric.mod.json") {
+            expand("version" to project.version)
             filter {
                 if (!it.contains("accessWidener") || hasAW)
                     it
@@ -174,7 +175,7 @@ modernProj.configure<DokkaExtension> {
             )
             this.sourceLink {
                 this.localDirectory.set(preProcessorArgs.preprocessedSources)
-                this.remoteUrl("https://github.com/NotEnoughUpdates/MoulConfig/blob/${Version.hash}/modern/templates/java")
+                this.remoteUrl("https://github.com/Akinsoft/SoftConfig/blob/${Version.hash}/modern/templates/java")
                 this.remoteLineSuffix.set("#L")
             }
         }

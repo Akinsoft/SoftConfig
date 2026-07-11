@@ -1,6 +1,5 @@
 plugins {
 	`kotlin-dsl`
-	kotlin("jvm") version "2.3.20"
 }
 repositories {
 	mavenCentral()
@@ -22,7 +21,7 @@ repositories {
 }
 
 dependencies {
-	api("xyz.wagyourtail.unimined:unimined:1.4.2-SNAPSHOT")
+	api("xyz.wagyourtail.unimined:unimined:1.4.2-20260616.121903-27")
     implementation("net.fabricmc:class-tweaker:0.2")
     implementation("net.fabricmc:tiny-remapper:0.9.0")
     api("xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm:1.2.2")
@@ -35,7 +34,7 @@ dependencies {
 	api("org.ow2.asm:asm-analysis:$asmVersion")
 	api("com.gradleup.shadow:shadow-gradle-plugin:9.0.0-beta12")
 	api("org.jetbrains.dokka:dokka-gradle-plugin:2.2.0")
-	val kotlinVersion = "2.3.20"
+	val kotlinVersion = embeddedKotlinVersion
 	api("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
 	api("org.jetbrains.kotlin.plugin.lombok:org.jetbrains.kotlin.plugin.lombok.gradle.plugin:$kotlinVersion")
 	api("systems.manifold.manifold-gradle-plugin:systems.manifold.manifold-gradle-plugin.gradle.plugin:0.0.2-alpha")

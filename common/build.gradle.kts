@@ -28,6 +28,11 @@ val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier.set("sources")
 }
 
+val javadocJar by tasks.creating(Jar::class) {
+    from(rootProject.tasks.named("compileAllDocs"))
+    archiveClassifier.set("javadoc")
+}
+
 publishing {
     publications {
         defaultMaven {
@@ -36,6 +41,9 @@ publishing {
             }
             artifact(sourcesJar) {
                 classifier = "sources"
+            }
+            artifact(javadocJar) {
+                classifier = "javadoc"
             }
         }
     }

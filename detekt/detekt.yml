@@ -1,0 +1,176 @@
+config:
+    validation: true
+
+style:
+    MagicNumber:
+        active: true
+        ignoreNumbers:
+            - '-1'
+            - '0'
+            - '1'
+            - '2'
+        ignoreHashCodeFunction: true
+        ignorePropertyDeclaration: true
+        ignoreLocalVariableDeclaration: false
+        ignoreConstantDeclaration: true
+        ignoreCompanionObjectPropertyDeclaration: true
+        ignoreAnnotation: true
+        ignoreNamedArgument: true
+        ignoreEnums: true
+        ignoreRanges: true
+        ignoreExtensionFunctions: true
+    UnusedParameter:
+        active: true
+        ignoreAnnotated:
+            - 'SubscribeEvent'
+            - 'HandleEvent'
+            - 'Mod.EventHandler'
+    ReturnCount:
+        active: true
+        max: 5
+        excludeGuardClauses: true
+        ignoreAnnotated:
+            - 'SubscribeEvent'
+            - 'HandleEvent'
+            - 'Mod.EventHandler'
+    MaxLineLength:
+        active: true
+        maxLineLength: 140
+        excludeCommentStatements: true
+    LoopWithTooManyJumpStatements:
+        active: true
+        maxJumpCount: 3
+    UnusedPrivateClass:
+        active: true
+    UnusedPrivateFunction:
+        active: true
+    UnusedPrivateProperty:
+        active: true
+        allowedNames: "^(unused|_)$"
+    UseCheckOrError:
+        active: false
+    ForbiddenComment:
+        active: false
+    DestructuringDeclarationWithTooManyEntries:
+        active: true
+        maxDestructuringEntries: 5
+
+ktlint:
+    MaximumLineLength:
+        active: false
+    MultiLineIfElse:
+        active: false
+    ArgumentListWrapping:
+        active: false
+    NoBlankLineBeforeRbrace:
+        active: false
+    NoConsecutiveBlankLines:
+        active: false
+    NoEmptyFirstLineInMethodBlock:
+        active: false
+    ParameterListWrapping:
+        active: false
+    CommentSpacing:
+        active: false
+    SpacingBetweenDeclarationsWithAnnotations:
+        active: false
+    SpacingBetweenDeclarationsWithComments:
+        active: false
+    ImportOrdering:
+        active: false
+    AnnotationSpacing:
+        active: false
+    FunctionReturnTypeSpacing:
+        maxLineLength: 140
+    ParameterWrapping:
+        maxLineLength: 140
+    PropertyWrapping:
+        maxLineLength: 140
+    Wrapping:
+        maxLineLength: 140
+    BlockCommentInitialStarAlignment:
+        active: false
+    CommentWrapping:
+        active: false
+    BinaryExpressionWrapping:
+        active: false
+    BlankLineBetweenWhenConditions:
+        active: false
+    ClassSignature:
+        active: false
+    FunctionExpressionBody:
+        active: false
+    FunctionLiteral:
+        active: false
+    FunctionSignature:
+        active: false
+    MixedConditionOperators:
+        active: false
+    TrailingCommaOnCallSite:
+        active: false
+
+complexity:
+    CyclomaticComplexMethod:
+        active: true
+        allowedComplexity: 25
+    LongParameterList:
+        active: false
+    NestedBlockDepth:
+        active: false
+    TooManyFunctions:
+        active: true
+        allowedFunctionsPerFile: 15
+        allowedFunctionsPerClass: 20
+        allowedFunctionsPerInterface: 20
+        allowedFunctionsPerObject: 20
+        allowedFunctionsPerEnum: 11
+        ignoreOverridden: true
+    ComplexCondition:
+        active: true
+        allowedConditions: 6
+    LongMethod:
+        active: true
+        allowedLines: 100
+
+exceptions:
+    SwallowedException:
+        active: false
+    ThrowingExceptionsWithoutMessageOrCause:
+        active: false
+    TooGenericExceptionCaught:
+        active: false
+    TooGenericExceptionThrown:
+        active: false
+
+naming:
+    ForbiddenClassName:
+        active: false
+    ConstructorParameterNaming:
+        active: false
+    VariableNaming:
+        excludeClassPattern: 'XSDGenerator'
+
+potential-bugs:
+    DoubleMutabilityForCollection:
+        active: false
+    HasPlatformType:
+        active: false
+    UnreachableCode:
+        active: true
+
+softconfig:
+    AmbiguousBooleanReturn:
+        active: true
+    LargeUngroupedConstantSet:
+        active: true
+        threshold: 15
+    VagueUtilsName:
+        active: true
+        allowedNames:
+            - CollectionUtils
+            - CommandUtils
+            - LerpUtils
+            - RenderUtils
+            - StringUtils
+            - TextRenderUtils
+            - TypeUtils

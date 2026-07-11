@@ -26,11 +26,12 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "MoulConfig"
+rootProject.name = "SoftConfig"
 
 include("common")
 include("legacy")
 include("modern")
+include("detekt-rules")
 listOf(
 	"1.21.4",
 	"1.21.5",

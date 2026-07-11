@@ -11,18 +11,19 @@ dokka {
         }
         this.sourceLink {
             this.localDirectory.set(project.file("src/"))
-            this.remoteUrl("https://github.com/NotEnoughUpdates/MoulConfig/blob/${Version.hash}/${project.projectDir.relativeTo(rootProject.projectDir)}/src")
+            this.remoteUrl("https://github.com/Akinsoft/SoftConfig/blob/${Version.hash}/${project.projectDir.relativeTo(rootProject.projectDir)}/src")
             this.remoteLineSuffix.set("#L")
         }
         println("[${project.name}] Dokka Source Set Id: ${sourceSetId.get()}")
     }
     this.moduleVersion.set(project.version.toString() + "+" + Version.shortHash)
     dokkaPublications.html {
+        this.failOnWarning.set(true)
         this.suppressInheritedMembers.set(true)
         this.suppressObviousFunctions.set(true)
     }
     pluginsConfiguration.html {
-        this.homepageLink.set("https://notenoughupdates.org/MoulConfig/")
+        this.homepageLink.set("https://akinsoft.github.io/SoftConfig/")
         this.separateInheritedMembers.set(true)
         this.mergeImplicitExpectActualDeclarations.set(true)
     }

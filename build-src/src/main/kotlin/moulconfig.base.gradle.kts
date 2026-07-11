@@ -1,66 +1,102 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.charset.StandardCharsets
 
+plugins {
+    signing
+}
+
 repositories {
-	mavenLocal()
-	mavenCentral()
-	maven("https://repo.nea.moe/releases")
-	maven("https://repo.spongepowered.org/maven/")
-	maven("https://maven.neoforged.net/releases")
+    mavenLocal()
+    mavenCentral()
+    maven("https://repo.nea.moe/releases")
+    maven("https://repo.spongepowered.org/maven/")
+    maven("https://maven.neoforged.net/releases")
+    maven("https://maven.notenoughupdates.org/releases") {
+        content {
+            includeGroup("org.notenoughupdates.moulconfig")
+        }
+    }
 }
 
+group = providers.gradleProperty("softconfig.group").get()
+version = providers.gradleProperty("softconfig.releaseVersion")
+    .orElse(providers.gradleProperty("softconfig.version"))
+    .get()
 
-group = providers.gradleProperty("moulconfig.publishGroup")
-	.orElse("org.notenoughupdates.moulconfig")
-	.get()
-version = providers.gradleProperty("moulconfig.publishVersion")
-	.orElse(if (Version.isSnapshot) "9999.9999.9999" else Version.tag!!)
-	.get()
-
-tasks.withType(JavaCompile::class) {
-	options.encoding = StandardCharsets.UTF_8.name()
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = StandardCharsets.UTF_8.name()
 }
 
-tasks.withType(ShadowJar::class).configureEach {
-	relocate("juuxel.libninepatch", "io.github.notenoughupdates.moulconfig.deps.libninepatch")
+tasks.withType<Jar>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(rootProject.file("LICENSE")) {
+        into("META-INF/licenses")
+        rename { "SoftConfig-LGPL-3.0.txt" }
+    }
+    from(rootProject.file("COPYING")) {
+        into("META-INF/licenses")
+        rename { "GNU-GPL-3.0.txt" }
+    }
+    from(rootProject.file("NOTICE")) {
+        into("META-INF")
+        rename { "NOTICE-SoftConfig" }
+    }
+    from(rootProject.file("third-party/libninepatch-MPL-2.0.txt")) {
+        into("META-INF/licenses")
+    }
 }
+
+tasks.withType<ShadowJar>().configureEach {
+    relocate("juuxel.libninepatch", "io.github.notenoughupdates.moulconfig.deps.libninepatch")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude("LICENSE")
+}
+
 afterEvaluate {
-	extensions.findByType<PublishingExtension>()?.apply {
-		repositories {
-			if (project.hasProperty("moulconfigPassword") && !Version.isSnapshot) {
-				maven {
-					url = uri("https://maven.notenoughupdates.org/releases")
-					name = "moulconfig"
-					credentials(PasswordCredentials::class)
-					authentication {
-						create<BasicAuthentication>("basic")
-					}
-				}
-			}
-		}
-		publications.filterIsInstance<MavenPublication>().forEach {
-			it.pom {
-				licenses {
-					license {
-						name.set("LGPL-3.0 or later")
-						url.set("https://github.com/NotEnoughUpdates/NotEnoughUpdates/blob/HEAD/COPYING.LESSER")
-					}
-				}
-				developers {
-					developer {
-						name.set("NotEnoughUpdates contributors")
-					}
-					developer {
-						name.set("Linnea Gräf")
-					}
-				}
-				scm {
-					url.set(
-						providers.gradleProperty("moulconfig.scmUrl")
-							.orElse("https://github.com/NotEnoughUpdates/MoulConfig")
-					)
-				}
-			}
-		}
-	}
+    extensions.findByType<PublishingExtension>()?.apply {
+        repositories {
+            providers.gradleProperty("softconfig.stagingDirectory").orNull?.let { stagingDirectory ->
+                maven {
+                    name = "centralStaging"
+                    url = uri(stagingDirectory)
+                }
+            }
+        }
+        publications.filterIsInstance<MavenPublication>().forEach { publication ->
+            publication.pom {
+                name.set("SoftConfig")
+                description.set("A compatibility-focused configuration library for Minecraft mods")
+                url.set("https://github.com/Akinsoft/SoftConfig")
+                licenses {
+                    license {
+                        name.set("GNU Lesser General Public License v3.0 or later")
+                        url.set("https://github.com/Akinsoft/SoftConfig/blob/main/LICENSE")
+                        distribution.set("repo")
+                    }
+                }
+                developers {
+                    developer {
+                        name.set("NotEnoughUpdates contributors")
+                    }
+                    developer {
+                        name.set("SoftConfig contributors")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/Akinsoft/SoftConfig.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/Akinsoft/SoftConfig.git")
+                    url.set("https://github.com/Akinsoft/SoftConfig")
+                }
+            }
+        }
+    }
+
+    extensions.findByType<SigningExtension>()?.apply {
+        val signingKey = providers.gradleProperty("softconfig.signingKey").orNull
+        val signingPassword = providers.gradleProperty("softconfig.signingPassword").orNull
+        if (signingKey != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign(extensions.getByType<PublishingExtension>().publications)
+        }
+    }
 }

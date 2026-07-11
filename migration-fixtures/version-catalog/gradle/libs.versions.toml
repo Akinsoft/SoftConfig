@@ -1,0 +1,5 @@
+[versions]
+softconfig = "4.8.0"
+
+[libraries]
+softconfig = { module = "io.github.akinsoft.softconfig:modern-26.2", version.ref = "softconfig" }
