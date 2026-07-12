@@ -142,6 +142,10 @@ public class ColorSelectComponent extends GuiComponent {
     private static DynamicTextureReference hueWheelImage;
     private static DynamicTextureReference brightnessSlider;
     private static DynamicTextureReference opacitySliderRef;
+    private static int cachedHueWheelBrightness;
+    private static int cachedBrightnessSliderAngle;
+    private static int cachedBrightnessSliderRadius;
+    private static int cachedOpacitySliderColour;
 
     private static DynamicTextureReference loadOrUpdate(DynamicTextureReference ref, BufferedImage image) {
         if (ref != null) ref.destroy();
@@ -149,19 +153,30 @@ public class ColorSelectComponent extends GuiComponent {
     }
 
     private DynamicTextureReference getOpacitySlider(int currentColour) {
+        int rgb = currentColour & 0x00FFFFFF;
+        if (opacitySliderRef != null && cachedOpacitySliderColour == rgb) {
+            return opacitySliderRef;
+        }
         BufferedImage bufferedImageOpacity = new BufferedImage(10, 64, BufferedImage.TYPE_INT_ARGB);
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 64; y++) {
                 if ((x == 0 || x == 9) && (y == 0 || y == 63)) continue;
 
-                int rgb = (currentColour & 0x00FFFFFF) | (Math.min(255, (64 - y) * 4) << 24);
-                bufferedImageOpacity.setRGB(x, y, rgb);
+                int pixel = rgb | (Math.min(255, (64 - y) * 4) << 24);
+                bufferedImageOpacity.setRGB(x, y, pixel);
             }
         }
-        return opacitySliderRef = loadOrUpdate(opacitySliderRef, bufferedImageOpacity);
+        opacitySliderRef = loadOrUpdate(opacitySliderRef, bufferedImageOpacity);
+        cachedOpacitySliderColour = rgb;
+        return opacitySliderRef;
     }
 
     private DynamicTextureReference getBrightnessSlider() {
+        int angle = Float.floatToIntBits(wheelAngle);
+        int radius = Float.floatToIntBits(wheelRadius);
+        if (brightnessSlider != null && cachedBrightnessSliderAngle == angle && cachedBrightnessSliderRadius == radius) {
+            return brightnessSlider;
+        }
         BufferedImage bufferedImageValue = new BufferedImage(10, 64, BufferedImage.TYPE_INT_ARGB);
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 64; y++) {
@@ -171,11 +186,17 @@ public class ColorSelectComponent extends GuiComponent {
                 bufferedImageValue.setRGB(x, y, rgb);
             }
         }
-        return brightnessSlider = loadOrUpdate(brightnessSlider, bufferedImageValue);
+        brightnessSlider = loadOrUpdate(brightnessSlider, bufferedImageValue);
+        cachedBrightnessSliderAngle = angle;
+        cachedBrightnessSliderRadius = radius;
+        return brightnessSlider;
     }
 
     private DynamicTextureReference getHueWheelImage(float brightness) {
-        // TODO cache this image if parameters havent changed.
+        int brightnessBits = Float.floatToIntBits(brightness);
+        if (hueWheelImage != null && cachedHueWheelBrightness == brightnessBits) {
+            return hueWheelImage;
+        }
         BufferedImage bufferedImage = new BufferedImage(288, 288, BufferedImage.TYPE_INT_ARGB);
         float borderRadius = 0.05f;
         for (int x = -16; x < 272; x++) {
@@ -203,7 +224,9 @@ public class ColorSelectComponent extends GuiComponent {
                 }
             }
         }
-        return hueWheelImage = loadOrUpdate(hueWheelImage, bufferedImage);
+        hueWheelImage = loadOrUpdate(hueWheelImage, bufferedImage);
+        cachedHueWheelBrightness = brightnessBits;
+        return hueWheelImage;
     }
 
     @Override
