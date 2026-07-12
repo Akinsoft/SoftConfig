@@ -97,11 +97,12 @@ tasks.named("jar", Jar::class) {
     dependsOn(tasks.processResources)
 }
 
+val softconfigVersion = version.toString()
 tasks.processResources {
-    inputs.property("softconfigVersion", project.version)
+    inputs.property("softconfigVersion", softconfigVersion)
     from(project(":modern").file("templates/resources")) {
         filesMatching("fabric.mod.json") {
-            expand("version" to project.version)
+            expand("version" to softconfigVersion)
             filter {
                 if (!it.contains("accessWidener") || hasAW)
                     it

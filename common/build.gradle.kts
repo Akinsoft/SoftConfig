@@ -23,12 +23,12 @@ artifacts {
     add(singleFile.name, tasks.jar)
 }
 
-val sourcesJar by tasks.creating(Jar::class) {
+val sourcesJar by tasks.registering(Jar::class) {
     from(sourceSets.main.get().allSource)
     archiveClassifier.set("sources")
 }
 
-val javadocJar by tasks.creating(Jar::class) {
+val javadocJar by tasks.registering(Jar::class) {
     from(rootProject.tasks.named("compileAllDocs"))
     archiveClassifier.set("javadoc")
 }

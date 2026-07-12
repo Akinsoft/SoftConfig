@@ -28,12 +28,12 @@ val processResources = tasks.named("processResources", Copy::class) {
 	from(project(":common").tasks.named("processResources"))
 }
 
-val sourcesJar by tasks.creating(Jar::class) {
+val sourcesJar by tasks.registering(Jar::class) {
 	from(sourceSets.named("main").map { it.allSource })
 	from(project(":common").the<SourceSetContainer>().getByName("main").allSource)
 	archiveClassifier.set("sources")
 }
-val javadocJar by tasks.creating(Jar::class) {
+val javadocJar by tasks.registering(Jar::class) {
     from(rootProject.tasks.named("compileAllDocs"))
     archiveClassifier.set("javadoc")
 }
