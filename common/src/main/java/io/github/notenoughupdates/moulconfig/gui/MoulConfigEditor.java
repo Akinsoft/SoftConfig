@@ -680,7 +680,6 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 }
                 optionY += optionHeight + getOptionBottomSpacing(optionHeight);
             }
-// TODO: why was this ever needed:             context.disableDepth();
             if (optionY > 0) {
                 barSize =
                     LerpUtils.clampZeroOne((float) (innerBottom - innerTop - 2) / (optionY + 5 + optionsScroll.getValue()));
@@ -691,15 +690,12 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         /// </editor-fold>
 
         /// <editor-fold name="Render overlays for options on the right">
-        // TODO: why was this ever needed: context.disableScissor();
         if (getSelectedCategory() != null && currentConfigEditing.containsKey(getSelectedCategory())) {
             int optionYOverlay = -optionsScroll.getValue();
             ProcessedCategory cat = currentConfigEditing.get(getSelectedCategory());
             int optionWidthDefault = innerRight - innerLeft - 20;
 
             context.pushMatrix();
-            // TODO: why was this ever needed: TODO: if this produces inconsistent results, just move the option bar rendering up. context.translate(0, 0, 10);
-            // TODO: why was this ever needed:    context.enableDepth();
             HashMap<Integer, Integer> activeAccordions = new HashMap<>();
             for (ProcessedOption option : getOptionsInCategory(cat)) {
                 int optionWidth = optionWidthDefault;
@@ -747,10 +743,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 }
                 optionYOverlay += optionHeight + getOptionBottomSpacing(optionHeight);
             }
-            // TODO: why was this ever needed:  context.disableDepth();
             context.popMatrix();
         }
-// TODO: why was this ever needed:         context.refreshScissor();
         /// </editor-fold>
 
         optionsBarStart = optionsScroll.getValue() / (float) (optionY + optionsScroll.getValue());
