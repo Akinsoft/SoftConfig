@@ -25,6 +25,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorAccordion;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorColour;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorCombinations;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorInfoText;
@@ -38,6 +39,7 @@ import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorAccordio
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorBoolean;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorButton;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorColour;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorCombinations;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorDraggableList;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorDropdown;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorInfoText;
@@ -58,6 +60,8 @@ public class BuiltinMoulConfigGuis {
             new GuiOptionEditorAccordion(processedOption, accordion.id()));
         processor.registerConfigEditor(ConfigEditorColour.class, (processedOption, configEditorColour) ->
             new GuiOptionEditorColour(processedOption));
+        processor.registerConfigEditor(ConfigEditorCombinations.class, (processedOption, combinations) ->
+            new GuiOptionEditorCombinations(processedOption, combinations.provider()));
         processor.registerConfigEditor(ConfigEditorDropdown.class, (processedOption, configEditorDropdown) ->
             new GuiOptionEditorDropdown(
                 processedOption,
