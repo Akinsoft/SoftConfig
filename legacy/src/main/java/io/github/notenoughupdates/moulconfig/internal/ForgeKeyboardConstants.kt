@@ -24,6 +24,8 @@ object ForgeKeyboardConstants : IKeyboardConstants {
         get() = Keyboard.KEY_NONE
     override val enter: Int
         get() = Keyboard.KEY_RETURN
+    override val keypadEnter: Int
+        get() = Keyboard.KEY_NUMPADENTER
     override val delete: Int
         get() = Keyboard.KEY_DELETE
     override val up: Int

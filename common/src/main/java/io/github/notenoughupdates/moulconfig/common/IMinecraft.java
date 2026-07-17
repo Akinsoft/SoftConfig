@@ -18,6 +18,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.ServiceLoader;
 
 @NullMarked
@@ -127,6 +129,17 @@ public interface IMinecraft {
     void copyToClipboard(String string);
 
     String copyFromClipboard();
+
+    default void playSound(MyResourceLocation sound) {
+        playSound(sound, 1.0F);
+    }
+
+    default void playSound(MyResourceLocation sound, float volume) {
+    }
+
+    default List<MyResourceLocation> getSoundIds() {
+        return Collections.emptyList();
+    }
 
     IMinecraft INSTANCE = InitUtil.makeUnchecked(() -> {
         var serviceLoader = ServiceLoader.load(IMinecraft.class);

@@ -32,6 +32,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorInfoText;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText;
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorTextList;
 import io.github.notenoughupdates.moulconfig.annotations.ConfigLink;
 import io.github.notenoughupdates.moulconfig.common.IMinecraft;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
@@ -46,6 +47,7 @@ import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorInfoText
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorKeybind;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorSlider;
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorText;
+import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorTextList;
 import lombok.val;
 
 import java.lang.reflect.Field;
@@ -75,6 +77,16 @@ public class BuiltinMoulConfigGuis {
             new GuiOptionEditorInfoText(processedOption, StructuredText.of(configEditorInfoText.infoTitle())));
         processor.registerConfigEditor(ConfigEditorText.class, (processedOption, configEditorText) ->
             new GuiOptionEditorText(processedOption, configEditorText.forbidden()));
+        processor.registerConfigEditor(ConfigEditorTextList.class, (processedOption, configEditorTextList) ->
+              new GuiOptionEditorTextList(
+                  processedOption,
+                  configEditorTextList.disabledSound(),
+                  configEditorTextList.enabledSound(),
+                  configEditorTextList.defaultSound(),
+                  configEditorTextList.showColour(),
+                  configEditorTextList.showNotification(),
+                  configEditorTextList.showVolume()
+              ));
         processor.registerConfigEditor(ConfigEditorDraggableList.class, (processedOption, configEditorDraggableList) ->
             new GuiOptionEditorDraggableList(processedOption, configEditorDraggableList.exampleText(), configEditorDraggableList.allowDeleting(), configEditorDraggableList.requireNonEmpty()));
 

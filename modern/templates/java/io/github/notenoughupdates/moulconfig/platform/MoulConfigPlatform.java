@@ -29,6 +29,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 #endif
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -37,6 +39,7 @@ import net.minecraft.resources.ResourceLocation;
 #else
 import net.minecraft.resources.Identifier;
 #endif
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +52,10 @@ import org.lwjgl.glfw.GLFW;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -350,5 +356,22 @@ public class MoulConfigPlatform implements IMinecraft {
     @Override
     public String copyFromClipboard() {
         return mc.keyboardHandler.getClipboard();
+    }
+
+    @Override
+    public void playSound(MyResourceLocation sound, float volume) {
+        mc.getSoundManager().play(SimpleSoundInstance.forUI(
+            SoundEvent.createVariableRangeEvent(unwrap(sound)),
+            1.0F,
+            volume
+        ));
+    }
+
+    @Override
+    public List<MyResourceLocation> getSoundIds() {
+        return BuiltInRegistries.SOUND_EVENT.keySet().stream()
+            .map(MoulConfigPlatform::wrap)
+            .sorted(Comparator.comparing(sound -> sound.getRoot() + ":" + sound.getPath()))
+            .collect(Collectors.toList());
     }
 }

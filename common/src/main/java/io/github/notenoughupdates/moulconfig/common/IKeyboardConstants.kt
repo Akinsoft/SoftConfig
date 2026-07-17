@@ -16,6 +16,8 @@ interface IKeyboardConstants {
     val escape: Int
     val none: Int
     val enter: Int
+    val keypadEnter: Int
+        get() = enter
     val delete: Int
     val up: Int
     val down: Int

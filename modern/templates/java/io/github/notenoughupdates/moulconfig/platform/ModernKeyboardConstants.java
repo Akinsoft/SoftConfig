@@ -59,6 +59,11 @@ public class ModernKeyboardConstants implements IKeyboardConstants {
     }
 
     @Override
+    public int getKeypadEnter() {
+        return InputConstants.KEY_NUMPADENTER;
+    }
+
+    @Override
     public int getDelete() {
         return InputConstants.KEY_DELETE;
     }
