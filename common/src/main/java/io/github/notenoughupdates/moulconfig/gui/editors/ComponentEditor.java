@@ -21,10 +21,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 public abstract class ComponentEditor extends GuiOptionEditor {
     private static final int HEIGHT = 45;
+    private static final int CHOICE_MIN_WIDTH = 100;
+    private static final int CHOICE_MAX_VISIBLE = 12;
+    private static final int CHOICE_HORIZONTAL_INSET = 8;
+    private static final int CHOICE_SCREEN_MARGIN = 4;
 
     protected ComponentEditor(ProcessedOption option) {
         super(option);
@@ -50,6 +58,61 @@ public abstract class ComponentEditor extends GuiOptionEditor {
         this.overlay = overlay;
         this.overlayX = overlayX;
         this.overlayY = overlayY;
+    }
+
+    protected final <T> void openRemovalOverlay(
+        List<T> entries,
+        Function<T, StructuredText> label,
+        Consumer<T> remove
+    ) {
+        List<T> choices = new ArrayList<>(entries);
+        if (choices.isEmpty()) return;
+        openChoiceOverlay(choices, label, choice -> {
+            remove.accept(choice);
+            choices.remove(choice);
+            if (choices.isEmpty()) closeOverlay();
+        });
+    }
+
+    protected final <T> void openChoiceOverlay(
+        List<T> choices,
+        Function<T, StructuredText> label,
+        Consumer<T> selected
+    ) {
+        openChoiceOverlay(choices, label, ignored -> 0xFFA0A0A0, selected);
+    }
+
+    protected final <T> void openChoiceOverlay(
+        List<T> choices,
+        Function<T, StructuredText> label,
+        ToIntFunction<T> textColor,
+        Consumer<T> selected
+    ) {
+        if (choices.isEmpty()) return;
+        var mouse = IMinecraft.INSTANCE.getMousePosition();
+        var placement = ChoiceListComponent.measure(
+            choices,
+            label,
+            mouse.getFirst(),
+            mouse.getSecond(),
+            CHOICE_MIN_WIDTH,
+            CHOICE_MAX_VISIBLE,
+            CHOICE_HORIZONTAL_INSET,
+            CHOICE_SCREEN_MARGIN
+        );
+        openOverlay(
+            new ChoiceListComponent<>(
+                choices,
+                placement.getWidth(),
+                placement.getHeight(),
+                label,
+                textColor,
+                selected,
+                this::closeOverlay
+            ),
+            placement.getX(),
+            placement.getY()
+        );
     }
 
     public @Nullable GuiComponent getOverlayDelegate() {

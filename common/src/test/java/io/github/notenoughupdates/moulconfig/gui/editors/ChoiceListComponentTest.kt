@@ -46,9 +46,9 @@ class ChoiceListComponentTest {
         val placement = measure(choices, 300, 1_000, anchorX = 290, anchorY = 990)
 
         assertEquals(196, placement.x)
-        assertEquals(850, placement.y)
+        assertEquals(831, placement.y)
         assertEquals(100, placement.width)
-        assertEquals(146, placement.height)
+        assertEquals(165, placement.height)
     }
 
     @Test
@@ -60,6 +60,16 @@ class ChoiceListComponentTest {
         assertEquals(4, placement.y)
         assertEquals(72, placement.width)
         assertEquals(92, placement.height)
+    }
+
+    @Test
+    fun `picker filters labels ignoring case`() {
+        val choices = listOf("Painting break", "Note block pling", "Experience orb")
+
+        assertEquals(
+            listOf("Note block pling"),
+            ChoiceListComponent.filterChoices(choices, { StructuredText.of(it) }, " PLING "),
+        )
     }
 
     private fun measure(

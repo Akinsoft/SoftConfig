@@ -164,6 +164,23 @@ public class GuiOptionEditorDraggableList extends ComponentEditor {
                                 );
                                 trashCanBoundingBox = Rect.ofGuiImmediateContext(context);
                             }
+
+                            @Override
+                            public boolean mouseEvent(@NotNull MouseEvent mouseEvent, @NotNull GuiImmediateContext context) {
+                                if (!canDeleteRightNow() || !context.isHovered()
+                                    || !(mouseEvent instanceof MouseEvent.Click)
+                                    || !((MouseEvent.Click) mouseEvent).getMouseState()
+                                    || ((MouseEvent.Click) mouseEvent).getMouseButton() != 0) {
+                                    return false;
+                                }
+                                openRemovalOverlay(activeText, GuiOptionEditorDraggableList.this::getExampleText, choice -> {
+                                    if (!canDeleteRightNow()) return;
+                                    activeText.remove(choice);
+                                    saveChanges();
+                                    if (!canDeleteRightNow()) closeOverlay();
+                                });
+                                return true;
+                            }
                         }),
                     48, 16),
                 new GuiComponent() {

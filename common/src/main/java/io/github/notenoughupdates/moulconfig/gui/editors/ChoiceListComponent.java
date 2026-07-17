@@ -26,12 +26,20 @@ import io.github.notenoughupdates.moulconfig.common.RenderContext;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiComponent;
 import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext;
+import io.github.notenoughupdates.moulconfig.gui.KeyboardEvent;
 import io.github.notenoughupdates.moulconfig.gui.MouseEvent;
+import io.github.notenoughupdates.moulconfig.gui.component.TextFieldComponent;
+import io.github.notenoughupdates.moulconfig.observer.GetSetter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 final class ChoiceListComponent<T> extends GuiComponent {
     private static final int ROW_HEIGHT = 12;
@@ -39,6 +47,9 @@ final class ChoiceListComponent<T> extends GuiComponent {
     private static final int TEXT_LEFT = 3;
     private static final int TEXT_TOP = 2;
     private static final int TEXT_RIGHT_INSET = 8;
+    private static final int SEARCH_MARGIN = 3;
+    private static final int SEARCH_HEIGHT = 14;
+    private static final int LIST_TOP = SEARCH_MARGIN + SEARCH_HEIGHT + SEARCH_MARGIN;
     private static final int SCROLL_STEP = 12;
     private static final int SCROLLBAR_EDGE_INSET = 1;
     private static final int SCROLLBAR_RIGHT_INSET = 3;
@@ -56,9 +67,52 @@ final class ChoiceListComponent<T> extends GuiComponent {
     private final int visibleWidth;
     private final int visibleHeight;
     private final Function<T, StructuredText> label;
+    private final ToIntFunction<T> textColor;
     private final Consumer<T> selected;
     private final Runnable dismissed;
+    private final TextFieldComponent searchField;
+    private List<T> filteredChoices;
+    private String search = "";
+    private boolean focusSearch = true;
     private int scrollOffset;
+
+    ChoiceListComponent(
+        List<T> choices,
+        int visibleWidth,
+        int visibleHeight,
+        Function<T, StructuredText> label,
+        ToIntFunction<T> textColor,
+        Consumer<T> selected,
+        Runnable dismissed
+    ) {
+        this.choices = choices;
+        this.visibleWidth = visibleWidth;
+        this.visibleHeight = visibleHeight;
+        this.label = label;
+        this.textColor = textColor;
+        this.selected = selected;
+        this.dismissed = dismissed;
+        this.filteredChoices = new ArrayList<>(choices);
+        this.searchField = new TextFieldComponent(
+            new GetSetter<String>() {
+                @Override
+                public String get() {
+                    return search;
+                }
+
+                @Override
+                public void set(String newValue) {
+                    search = newValue;
+                    refreshChoices();
+                }
+            },
+            Math.max(1, visibleWidth - SEARCH_MARGIN * 2),
+            () -> true,
+            "Search...",
+            IMinecraft.INSTANCE.getDefaultFontRenderer(),
+            Collections.singleton('§')
+        );
+    }
 
     ChoiceListComponent(
         List<T> choices,
@@ -68,16 +122,23 @@ final class ChoiceListComponent<T> extends GuiComponent {
         Consumer<T> selected,
         Runnable dismissed
     ) {
-        this.choices = choices;
-        this.visibleWidth = visibleWidth;
-        this.visibleHeight = visibleHeight;
-        this.label = label;
-        this.selected = selected;
-        this.dismissed = dismissed;
+        this(choices, visibleWidth, visibleHeight, label, ignored -> TEXT_COLOR, selected, dismissed);
     }
 
     static int contentHeight(int choiceCount) {
-        return choiceCount * ROW_HEIGHT + BORDER_WIDTH * 2;
+        return LIST_TOP + choiceCount * ROW_HEIGHT + BORDER_WIDTH;
+    }
+
+    static <T> List<T> filterChoices(
+        List<T> choices,
+        Function<T, StructuredText> label,
+        String query
+    ) {
+        String normalizedQuery = query.trim().toLowerCase(Locale.ROOT);
+        if (normalizedQuery.isEmpty()) return new ArrayList<>(choices);
+        return choices.stream()
+            .filter(choice -> label.apply(choice).getText().toLowerCase(Locale.ROOT).contains(normalizedQuery))
+            .collect(Collectors.toList());
     }
 
     static <T> Placement measure(
@@ -151,7 +212,7 @@ final class ChoiceListComponent<T> extends GuiComponent {
     @Override
     public boolean mouseEvent(MouseEvent mouseEvent, GuiImmediateContext context) {
         clampScroll(context.getHeight());
-        if (context.isHovered() && mouseEvent instanceof MouseEvent.Scroll) {
+        if (context.isHovered() && context.getMouseY() >= LIST_TOP && mouseEvent instanceof MouseEvent.Scroll) {
             MouseEvent.Scroll scroll = (MouseEvent.Scroll) mouseEvent;
             int target = (int) (scrollOffset - scroll.getDWheel() * SCROLL_STEP);
             scrollOffset = Math.max(0, Math.min(target, maxScrollOffset(context.getHeight())));
@@ -164,12 +225,38 @@ final class ChoiceListComponent<T> extends GuiComponent {
             dismissed.run();
             return true;
         }
-        int contentY = context.getMouseY() + scrollOffset - BORDER_WIDTH;
-        if (contentY >= 0 && contentY < choices.size() * ROW_HEIGHT) {
+        GuiImmediateContext searchContext = context.translated(
+            SEARCH_MARGIN,
+            SEARCH_MARGIN,
+            Math.max(1, context.getWidth() - SEARCH_MARGIN * 2),
+            SEARCH_HEIGHT
+        );
+        if (searchField.mouseEvent(mouseEvent, searchContext)) return true;
+        int contentY = context.getMouseY() + scrollOffset - LIST_TOP;
+        if (contentY >= 0 && contentY < filteredChoices.size() * ROW_HEIGHT) {
             int selectedIndex = contentY / ROW_HEIGHT;
-            selected.accept(choices.get(selectedIndex));
+            selected.accept(filteredChoices.get(selectedIndex));
+            refreshChoices();
         }
         return true;
+    }
+
+    @Override
+    public boolean keyboardEvent(KeyboardEvent event, GuiImmediateContext context) {
+        return searchField.keyboardEvent(
+            event,
+            context.translated(
+                SEARCH_MARGIN,
+                SEARCH_MARGIN,
+                Math.max(1, context.getWidth() - SEARCH_MARGIN * 2),
+                SEARCH_HEIGHT
+            )
+        );
+    }
+
+    @Override
+    public <R> R foldChildren(R initial, BiFunction<GuiComponent, R, R> visitor) {
+        return visitor.apply(searchField, initial);
     }
 
     @Override
@@ -184,13 +271,26 @@ final class ChoiceListComponent<T> extends GuiComponent {
             context.getHeight() - BORDER_WIDTH,
             BACKGROUND_COLOR
         );
-        render.pushScissor(BORDER_WIDTH, BORDER_WIDTH, context.getWidth() - BORDER_WIDTH, context.getHeight() - BORDER_WIDTH);
+        if (focusSearch) {
+            searchField.requestFocus();
+            focusSearch = false;
+        }
         render.pushMatrix();
-        render.translate(0, -scrollOffset);
+        render.translate(SEARCH_MARGIN, SEARCH_MARGIN);
+        searchField.render(context.translated(
+            SEARCH_MARGIN,
+            SEARCH_MARGIN,
+            Math.max(1, context.getWidth() - SEARCH_MARGIN * 2),
+            SEARCH_HEIGHT
+        ));
+        render.popMatrix();
+        render.pushScissor(BORDER_WIDTH, LIST_TOP, context.getWidth() - BORDER_WIDTH, context.getHeight() - BORDER_WIDTH);
+        render.pushMatrix();
+        render.translate(0, LIST_TOP - scrollOffset);
         IFontRenderer font = render.getMinecraft().getDefaultFontRenderer();
-        for (int index = 0; index < choices.size(); index++) {
-            int rowTop = BORDER_WIDTH + index * ROW_HEIGHT;
-            int mouseContentY = context.getMouseY() + scrollOffset;
+        for (int index = 0; index < filteredChoices.size(); index++) {
+            int rowTop = index * ROW_HEIGHT;
+            int mouseContentY = context.getMouseY() + scrollOffset - LIST_TOP;
             if (context.getMouseX() >= 0 && context.getMouseX() < context.getWidth()
                 && mouseContentY >= rowTop && mouseContentY < rowTop + ROW_HEIGHT) {
                 render.drawColoredRect(
@@ -202,13 +302,13 @@ final class ChoiceListComponent<T> extends GuiComponent {
                 );
             }
             render.drawStringScaledMaxWidth(
-                label.apply(choices.get(index)),
+                label.apply(filteredChoices.get(index)),
                 font,
                 TEXT_LEFT,
                 rowTop + TEXT_TOP,
                 false,
                 context.getWidth() - TEXT_RIGHT_INSET,
-                TEXT_COLOR
+                textColor.applyAsInt(filteredChoices.get(index))
             );
         }
         render.popMatrix();
@@ -221,23 +321,25 @@ final class ChoiceListComponent<T> extends GuiComponent {
     }
 
     private int maxScrollOffset(int height) {
-        return Math.max(0, contentHeight(choices.size()) - height);
+        return Math.max(0, filteredChoices.size() * ROW_HEIGHT - listViewportHeight(height));
     }
 
     private void drawScrollbar(GuiImmediateContext context) {
-        int contentHeight = contentHeight(choices.size());
-        if (contentHeight <= context.getHeight()) {
+        int contentHeight = filteredChoices.size() * ROW_HEIGHT;
+        int viewportHeight = listViewportHeight(context.getHeight());
+        if (contentHeight <= viewportHeight || viewportHeight <= 0) {
             return;
         }
-        int trackHeight = context.getHeight() - SCROLLBAR_EDGE_INSET * 2;
-        int thumbHeight = Math.max(MIN_THUMB_HEIGHT, trackHeight * context.getHeight() / contentHeight);
-        int maxScroll = contentHeight - context.getHeight();
-        int thumbTop = SCROLLBAR_EDGE_INSET
+        int trackTop = LIST_TOP + SCROLLBAR_EDGE_INSET;
+        int trackHeight = viewportHeight - SCROLLBAR_EDGE_INSET * 2;
+        int thumbHeight = Math.max(MIN_THUMB_HEIGHT, trackHeight * viewportHeight / contentHeight);
+        int maxScroll = contentHeight - viewportHeight;
+        int thumbTop = trackTop
             + (int) ((trackHeight - thumbHeight) * scrollOffset / (float) maxScroll);
         int scrollbarX = context.getWidth() - SCROLLBAR_RIGHT_INSET;
         context.getRenderContext().drawColoredRect(
             scrollbarX,
-            SCROLLBAR_EDGE_INSET,
+            trackTop,
             scrollbarX + SCROLLBAR_WIDTH,
             context.getHeight() - SCROLLBAR_EDGE_INSET,
             SCROLLBAR_TRACK_COLOR
@@ -249,6 +351,15 @@ final class ChoiceListComponent<T> extends GuiComponent {
             thumbTop + thumbHeight,
             SCROLLBAR_THUMB_COLOR
         );
+    }
+
+    private int listViewportHeight(int height) {
+        return Math.max(0, height - LIST_TOP - BORDER_WIDTH);
+    }
+
+    private void refreshChoices() {
+        filteredChoices = filterChoices(choices, label, search);
+        scrollOffset = 0;
     }
 
     static final class Placement {
