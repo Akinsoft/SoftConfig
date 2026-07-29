@@ -62,6 +62,10 @@ import java.util.stream.Collectors;
 
 public class MoulConfigEditor<T extends Config> extends GuiElement implements CloseEventListener {
     private static final int OPTION_VISIBILITY_ANIMATION_MS = 180;
+    private static final int BASE_EDITOR_WIDTH = 500;
+    private static final int BASE_LEFT_PANEL_WIDTH = 140;
+    private static final int CATEGORY_TEXT_WIDTH = 100;
+    private static final int INDENTED_CATEGORY_TEXT_WIDTH = 90;
 
     private final long openedMillis;
     private final LerpingInteger optionsScroll = new LerpingInteger(0, 150);
@@ -371,6 +375,68 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         return currentlyVisibleCategories;
     }
 
+    private static int getCategoryMaxTextLength(
+        boolean isIndented,
+        int leftPanelWidth,
+        float leftPanelScalar
+    ) {
+        int baseTextWidth = (int) ((isIndented ? INDENTED_CATEGORY_TEXT_WIDTH : CATEGORY_TEXT_WIDTH) *
+            leftPanelScalar);
+        int basePanelWidth = (int) (BASE_LEFT_PANEL_WIDTH * leftPanelScalar);
+        return baseTextWidth + leftPanelWidth - basePanelWidth;
+    }
+
+    private EditorWidths getEditorWidths(IMinecraft minecraft) {
+        int availableWidth = minecraft.getScaledWidth() - 100 / minecraft.getScaleFactor();
+        int baseXSize = Math.min(availableWidth, BASE_EDITOR_WIDTH);
+        int defaultXSize = wide
+            ? Math.min((int) Math.floor(baseXSize * 1.5F), availableWidth)
+            : baseXSize;
+        float leftPanelScalar = wide ? 1.25F : 1F;
+        int defaultLeftPanelWidth = (int) (BASE_LEFT_PANEL_WIDTH * leftPanelScalar);
+        int desiredLeftPanelWidth = defaultLeftPanelWidth;
+        IFontRenderer fontRenderer = minecraft.getDefaultFontRenderer();
+        for (Map.Entry<String, ? extends ProcessedCategory> entry : allCategories.entrySet()) {
+            ProcessedCategory category = entry.getValue();
+            boolean isIndented = childCategoryLookup.containsKey(entry.getKey()) ||
+                category.getParentCategoryId() != null;
+            int textWidth = Math.max(
+                fontRenderer.getStringWidth(getConfigObject().formatCategoryName(category, false)),
+                fontRenderer.getStringWidth(getConfigObject().formatCategoryName(category, true))
+            );
+            int availableTextWidth = getCategoryMaxTextLength(
+                isIndented,
+                defaultLeftPanelWidth,
+                leftPanelScalar
+            );
+            desiredLeftPanelWidth = Math.max(
+                desiredLeftPanelWidth,
+                defaultLeftPanelWidth + textWidth - availableTextWidth
+            );
+        }
+        int leftPanelWidth = Math.min(
+            desiredLeftPanelWidth,
+            defaultLeftPanelWidth + Math.max(0, availableWidth - defaultXSize)
+        );
+        return new EditorWidths(
+            defaultXSize + leftPanelWidth - defaultLeftPanelWidth,
+            leftPanelWidth,
+            leftPanelScalar
+        );
+    }
+
+    private static final class EditorWidths {
+        private final int xSize;
+        private final int leftPanelWidth;
+        private final float leftPanelScalar;
+
+        private EditorWidths(int xSize, int leftPanelWidth, float leftPanelScalar) {
+            this.xSize = xSize;
+            this.leftPanelWidth = leftPanelWidth;
+            this.leftPanelScalar = leftPanelScalar;
+        }
+    }
+
     public void render() {
         optionsScroll.tick();
         categoryScroll.tick();
@@ -391,21 +457,11 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         int mouseX = iMinecraft.getMouseX();
         int mouseY = iMinecraft.getMouseY();
 
-        int baseXSize = Math.min(width - 100 / scaleFactor, 500);
-        int xSize;
-        if (wide) {
-            int raw = (int) Math.floor(baseXSize * 1.5f);
-            xSize = Math.min(raw, width - 100 / scaleFactor);
-        } else {
-            xSize = baseXSize;
-        }
+        EditorWidths editorWidths = getEditorWidths(iMinecraft);
+        int xSize = editorWidths.xSize;
         int ySize = Math.min(height - 100 / scaleFactor, 400);
-
-        float leftPanelScalar = 1.0f;
-        if (wide) {
-            leftPanelScalar = 1.25f;
-        }
-        int leftPanelWidth = (int) (140f * leftPanelScalar);
+        float leftPanelScalar = editorWidths.leftPanelScalar;
+        int leftPanelWidth = editorWidths.leftPanelWidth;
 
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
@@ -483,32 +539,43 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         int catY = -categoryScroll.getValue();
 
         LinkedHashMap<String, ProcessedCategory> currentConfigEditing = getCurrentlyVisibleCategories();
+        String selectedCategory = getSelectedCategory();
+        if (!currentConfigEditing.isEmpty() &&
+            (selectedCategory == null || !currentConfigEditing.containsKey(selectedCategory))) {
+            setSelectedCategory(currentConfigEditing.keySet().iterator().next());
+        }
+        float categoryTextScale = 1F;
         for (Map.Entry<String, ProcessedCategory> entry : currentConfigEditing.entrySet()) {
-            String selectedCategory = getSelectedCategory();
-            if (selectedCategory == null || !currentConfigEditing.containsKey(selectedCategory)) {
-                setSelectedCategory(entry.getKey());
-            }
+            boolean isSelected = entry.getKey().equals(getSelectedCategory());
+            boolean isIndented = childCategoryLookup.containsKey(entry.getKey()) ||
+                entry.getValue().getParentCategoryId() != null;
+            int textLength = ifr.getStringWidth(getConfigObject().formatCategoryName(entry.getValue(), isSelected));
+            int maxTextLength = getCategoryMaxTextLength(isIndented, leftPanelWidth, leftPanelScalar);
+            categoryTextScale = Math.min(categoryTextScale, maxTextLength / (float) textLength);
+        }
+        for (Map.Entry<String, ProcessedCategory> entry : currentConfigEditing.entrySet()) {
             var isSelected = entry.getKey().equals(getSelectedCategory());
             var childCategories = childCategoryLookup.get(entry.getKey());
             var catName = getConfigObject().formatCategoryName(entry.getValue(), isSelected);
             var align = getConfigObject().alignCategory(entry.getValue(), isSelected);
             var textLength = ifr.getStringWidth(catName);
             var isIndented = childCategories != null || entry.getValue().getParentCategoryId() != null;
-            int maxTextLength = (int) (((isIndented) ? 90 : 100) * leftPanelScalar);
-            int centerMark = x + (int) (75 * leftPanelScalar);
-            if (textLength > maxTextLength) {
-                context.drawStringCenteredScaledMaxWidth(catName,
-                    ifr, centerMark + (isIndented ? 5 : 0), y + 70 + catY, false, maxTextLength, -1
-                );
-            } else if (align == HorizontalAlign.CENTER) {
-                context.drawStringCenteredScaledMaxWidth(catName,
-                    ifr, centerMark, y + 70 + catY, false, maxTextLength, -1
-                );
-            } else if (align == HorizontalAlign.RIGHT) {
-                context.drawString(ifr, catName, centerMark + 50 - textLength, y + 70 + catY - ifr.getHeight() / 2, -1, false);
-            } else {
-                context.drawString(ifr, catName, centerMark - 50 + (isIndented ? 10 : 0), y + 70 + catY - ifr.getHeight() / 2, -1, false);
+            int maxTextLength = getCategoryMaxTextLength(isIndented, leftPanelWidth, leftPanelScalar);
+            float centerMark = x + (leftPanelWidth + 20 * leftPanelScalar) / 2F;
+            float anchorX = centerMark;
+            int textX = -textLength / 2;
+            if (align == HorizontalAlign.RIGHT) {
+                anchorX += maxTextLength / 2F;
+                textX = -textLength;
+            } else if (align == HorizontalAlign.LEFT) {
+                anchorX -= maxTextLength / 2F;
+                textX = 0;
             }
+            context.pushMatrix();
+            context.translate(anchorX, y + 70 + catY);
+            context.scale(categoryTextScale);
+            context.drawString(ifr, catName, textX, -ifr.getHeight() / 2, -1, false);
+            context.popMatrix();
             if (childCategories != null) {
                 var isExpanded = showSubcategories && (isSelected || childCategories.contains(getSelectedCategory()));
                 context.drawOpenCloseTriangle(isExpanded, x + 24.5F, y + 67 + catY, 6, 6, -1);
@@ -817,22 +884,15 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         int scaleFactor = iMinecraft.getScaleFactor();
         int adjScaleFactor = Math.max(2, scaleFactor);
 
-        int baseXSize = Math.min(width - 100 / scaleFactor, 500);
-        int xSize;
-        if (wide) {
-            int raw = (int) Math.floor(baseXSize * 1.5f);
-            xSize = Math.min(raw, width - 100 / scaleFactor);
-        } else {
-            xSize = baseXSize;
-        }
+        EditorWidths editorWidths = getEditorWidths(iMinecraft);
+        int xSize = editorWidths.xSize;
         int ySize = Math.min(height - 100 / scaleFactor, 400);
 
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
 
         int innerPadding = 20 / adjScaleFactor;
-        float leftPanelScalar = wide ? 1.25f : 1.0f;
-        int leftPanelWidth = (int) (140f * leftPanelScalar);
+        int leftPanelWidth = editorWidths.leftPanelWidth;
 
         int catsInnerLeft = x + 4 + innerPadding;
         int optsInnerLeft = x + (leftPanelWidth + 9) + innerPadding;
@@ -1208,20 +1268,11 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
 
     public boolean keyboardInput(KeyboardEvent event) {
         val iMinecraft = IMinecraft.INSTANCE;
-        int width = iMinecraft.getScaledWidth();
-        int height = iMinecraft.getScaledHeight();
         int scaleFactor = iMinecraft.getScaleFactor();
 
-        int baseXSize = Math.min(width - 100 / scaleFactor, 500);
-        int xSize;
-        if (wide) {
-            int raw = (int) Math.floor(baseXSize * 1.5f);
-            xSize = Math.min(raw, width - 100 / scaleFactor);
-        } else {
-            xSize = baseXSize;
-        }
-        float leftPanelScalar = wide ? 1.25f : 1.0f;
-        int leftPanelWidth = (int) (140f * leftPanelScalar);
+        EditorWidths editorWidths = getEditorWidths(iMinecraft);
+        int xSize = editorWidths.xSize;
+        int leftPanelWidth = editorWidths.leftPanelWidth;
 
         int adjScaleFactor = Math.max(2, scaleFactor);
 
