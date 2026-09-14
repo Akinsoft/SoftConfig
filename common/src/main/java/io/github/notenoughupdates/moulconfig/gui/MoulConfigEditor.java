@@ -55,7 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,7 +64,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
     private static final int BASE_EDITOR_WIDTH = 500;
     private static final int BASE_LEFT_PANEL_WIDTH = 140;
     private static final int CATEGORY_TEXT_WIDTH = 100;
-    private static final int INDENTED_CATEGORY_TEXT_WIDTH = 90;
+    private static final int CATEGORY_INDENT_WIDTH = 10;
 
     private final long openedMillis;
     private final LerpingInteger optionsScroll = new LerpingInteger(0, 150);
@@ -252,6 +251,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
 
     private void setSelectedCategory(String category) {
         selectedCategory = category;
+        showSubcategories = true;
         optionsScroll.setValue(0);
     }
 
@@ -320,10 +320,9 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
 
             Set<ProcessedOption> matchingOptionsAndDependencies = new HashSet<>();
 
-            var childCategoriesOfDirectlyMatched = directlyMatchedCategories.stream()
-                .flatMap(it -> childCategoryLookup.getOrDefault(it.getIdentifier(), Collections.emptySet()).stream())
-                .map(getAllCategories()::get)
-                .filter(Objects::nonNull)
+            var childCategoriesOfDirectlyMatched = getAllCategories().values().stream()
+                .filter(it -> getCategoryPath(it.getIdentifier()).stream()
+                    .map(getAllCategories()::get).anyMatch(directlyMatchedCategories::contains))
                 .collect(Collectors.toList());
             directlyMatchedCategories.addAll(childCategoriesOfDirectlyMatched);
 
@@ -343,9 +342,8 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 .stream()
                 .map(ProcessedOption::getCategory).collect(Collectors.toSet());
             Set<ProcessedCategory> parentCategories = visibleCategories.stream()
-                .filter(it -> it.getParentCategoryId() != null)
-                .map(it -> getAllCategories().get(it.getParentCategoryId()))
-                .filter(Objects::nonNull).collect(Collectors.toSet());
+                .flatMap(it -> getCategoryPath(it.getIdentifier()).stream())
+                .map(getAllCategories()::get).collect(Collectors.toSet());
             visibleCategories.addAll(parentCategories);
             LinkedHashMap<String, ProcessedCategory> matchingCategories = new LinkedHashMap<>(getAllCategories());
             matchingCategories.entrySet().removeIf(stringProcessedCategoryEntry -> !visibleCategories.contains(stringProcessedCategoryEntry.getValue()));
@@ -356,18 +354,26 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         }
     }
 
+    private List<String> getCategoryPath(String categoryId) {
+        List<String> path = new ArrayList<>();
+        for (ProcessedCategory category = allCategories.get(categoryId); category != null;
+             category = allCategories.get(category.getParentCategoryId())) {
+            path.add(category.getIdentifier());
+        }
+        return path;
+    }
+
+    private Set<String> getExpandedCategories() {
+        Set<String> expanded = new HashSet<>(getCategoryPath(getSelectedCategory()));
+        if (!showSubcategories) expanded.remove(getSelectedCategory());
+        return expanded;
+    }
+
     public LinkedHashMap<String, ProcessedCategory> getCurrentlyVisibleCategories() {
+        Set<String> expanded = getExpandedCategories();
         var newHashes = new LinkedHashMap<String, ProcessedCategory>(currentlyVisibleCategories);
-        newHashes.entrySet().removeIf(it -> {
-            if (it.getValue().getParentCategoryId() == null) return false;
-            if (!showSubcategories) return true;
-            if (it.getValue().getParentCategoryId().equals(getSelectedCategory())) return false;
-            var processedCategory = currentlyVisibleCategories.get(getSelectedCategory());
-            if (processedCategory == null) return true;
-            //noinspection RedundantIfStatement
-            if (it.getValue().getParentCategoryId().equals(processedCategory.getParentCategoryId())) return false;
-            return true;
-        });
+        newHashes.entrySet().removeIf(it -> it.getValue().getParentCategoryId() != null &&
+            !expanded.contains(it.getValue().getParentCategoryId()));
         return newHashes;
     }
 
@@ -375,13 +381,17 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         return currentlyVisibleCategories;
     }
 
+    private int getCategoryIndent(String categoryId) {
+        int depth = getCategoryPath(categoryId).size() - 1;
+        return depth > 0 || childCategoryLookup.containsKey(categoryId) ? depth + 1 : 0;
+    }
+
     private static int getCategoryMaxTextLength(
-        boolean isIndented,
+        int indent,
         int leftPanelWidth,
         float leftPanelScalar
     ) {
-        int baseTextWidth = (int) ((isIndented ? INDENTED_CATEGORY_TEXT_WIDTH : CATEGORY_TEXT_WIDTH) *
-            leftPanelScalar);
+        int baseTextWidth = (int) ((CATEGORY_TEXT_WIDTH - indent * CATEGORY_INDENT_WIDTH) * leftPanelScalar);
         int basePanelWidth = (int) (BASE_LEFT_PANEL_WIDTH * leftPanelScalar);
         return baseTextWidth + leftPanelWidth - basePanelWidth;
     }
@@ -398,14 +408,13 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         IFontRenderer fontRenderer = minecraft.getDefaultFontRenderer();
         for (Map.Entry<String, ? extends ProcessedCategory> entry : allCategories.entrySet()) {
             ProcessedCategory category = entry.getValue();
-            boolean isIndented = childCategoryLookup.containsKey(entry.getKey()) ||
-                category.getParentCategoryId() != null;
+            int indent = getCategoryIndent(entry.getKey());
             int textWidth = Math.max(
                 fontRenderer.getStringWidth(getConfigObject().formatCategoryName(category, false)),
                 fontRenderer.getStringWidth(getConfigObject().formatCategoryName(category, true))
             );
             int availableTextWidth = getCategoryMaxTextLength(
-                isIndented,
+                indent,
                 defaultLeftPanelWidth,
                 leftPanelScalar
             );
@@ -547,10 +556,9 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
         float categoryTextScale = 1F;
         for (Map.Entry<String, ProcessedCategory> entry : currentConfigEditing.entrySet()) {
             boolean isSelected = entry.getKey().equals(getSelectedCategory());
-            boolean isIndented = childCategoryLookup.containsKey(entry.getKey()) ||
-                entry.getValue().getParentCategoryId() != null;
+            int indent = getCategoryIndent(entry.getKey());
             int textLength = ifr.getStringWidth(getConfigObject().formatCategoryName(entry.getValue(), isSelected));
-            int maxTextLength = getCategoryMaxTextLength(isIndented, leftPanelWidth, leftPanelScalar);
+            int maxTextLength = getCategoryMaxTextLength(indent, leftPanelWidth, leftPanelScalar);
             categoryTextScale = Math.min(categoryTextScale, maxTextLength / (float) textLength);
         }
         for (Map.Entry<String, ProcessedCategory> entry : currentConfigEditing.entrySet()) {
@@ -559,9 +567,10 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
             var catName = getConfigObject().formatCategoryName(entry.getValue(), isSelected);
             var align = getConfigObject().alignCategory(entry.getValue(), isSelected);
             var textLength = ifr.getStringWidth(catName);
-            var isIndented = childCategories != null || entry.getValue().getParentCategoryId() != null;
-            int maxTextLength = getCategoryMaxTextLength(isIndented, leftPanelWidth, leftPanelScalar);
-            float centerMark = x + (leftPanelWidth + 20 * leftPanelScalar) / 2F;
+            int indent = getCategoryIndent(entry.getKey());
+            int maxTextLength = getCategoryMaxTextLength(indent, leftPanelWidth, leftPanelScalar);
+            float centerMark = x + (leftPanelWidth + 20 * leftPanelScalar +
+                Math.max(0, indent - 1) * CATEGORY_INDENT_WIDTH * leftPanelScalar) / 2F;
             float anchorX = centerMark;
             int textX = -textLength / 2;
             if (align == HorizontalAlign.RIGHT) {
@@ -577,10 +586,14 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
             context.drawString(ifr, catName, textX, -ifr.getHeight() / 2, -1, false);
             context.popMatrix();
             if (childCategories != null) {
-                var isExpanded = showSubcategories && (isSelected || childCategories.contains(getSelectedCategory()));
-                context.drawOpenCloseTriangle(isExpanded, x + 24.5F, y + 67 + catY, 6, 6, -1);
+                var isExpanded = getExpandedCategories().contains(entry.getKey());
+                float categoryIndent = (indent - 1) * CATEGORY_INDENT_WIDTH * leftPanelScalar;
+                context.drawOpenCloseTriangle(isExpanded, x + 24.5F + categoryIndent, y + 67 + catY, 6, 6, -1);
                 if (isExpanded) {
-                    context.drawVerticalLine(x + 27, y + catY + 76, y + catY + 76 + ((int) childCategories.stream().filter(currentConfigEditing::containsKey).count()) * 15, 0xFF444444);
+                    long visibleDescendants = currentConfigEditing.keySet().stream()
+                        .filter(id -> !id.equals(entry.getKey()) && getCategoryPath(id).contains(entry.getKey())).count();
+                    context.drawVerticalLine(x + 27 + (int) categoryIndent, y + catY + 76,
+                        y + catY + 76 + (int) visibleDescendants * 15, 0xFF444444);
                 }
             }
             catY += 15;
@@ -684,24 +697,23 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
             int optionWidthDefault = innerRight - innerLeft - 20;
             HashMap<Integer, Integer> activeAccordions = new HashMap<>();
             if (!hasSearchMatchingOptions(cat)) {
+                boolean hasSubcategories = childCategoryLookup.getOrDefault(cat.getIdentifier(), Collections.emptySet()).stream()
+                    .anyMatch(currentlyVisibleCategories::containsKey);
                 var titlePositionX = (innerLeft + innerRight) / 2;
                 var titlePositionY = (innerTop + innerBottom) / 3;
                 var innerSize = innerRight - innerLeft - 40;
                 var titleScale = 2;
                 context.pushMatrix();
                 context.translate(titlePositionX, titlePositionY);
-                context.drawStringCenteredScaledMaxWidth(StructuredText.of("Seems like your search is found in a subcategory.").grey(), ifr,
+                context.drawStringCenteredScaledMaxWidth(StructuredText.of(hasSubcategories
+                    ? "Select a subcategory on the left to view its settings." : "Try a different search.").grey(), ifr,
                     0,
                     titleScale * ifr.getHeight(),
                     true, innerSize, -1
                 );
-                context.drawStringCenteredScaledMaxWidth(StructuredText.of("Check out the subcategories on the left.").grey(), ifr,
-                    0,
-                    (titleScale + 1) * ifr.getHeight(),
-                    true, innerSize, -1
-                );
                 context.scale(titleScale, titleScale);
-                context.drawStringCenteredScaledMaxWidth(StructuredText.of("No options found.").grey(), ifr,
+                context.drawStringCenteredScaledMaxWidth(StructuredText.of(hasSubcategories
+                    ? "Choose a subcategory" : "No options found.").grey(), ifr,
                     0,
                     0,
                     true, innerSize / titleScale, -1
@@ -1126,7 +1138,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                     if (mouseX >= x + 5 && mouseX <= x + (leftPanelWidth + 5) &&
                         mouseY >= y + 70 + catY - 7 && mouseY <= y + 70 + catY + 7) {
                         if (entry.getKey().equals(getSelectedCategory())) {
-                            if (entry.getValue().getParentCategoryId() == null)
+                            if (childCategoryLookup.containsKey(entry.getKey()))
                                 showSubcategories = !showSubcategories;
                         } else {
                             showSubcategories = true;

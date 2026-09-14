@@ -222,11 +222,7 @@ public class ConfigProcessorDriver {
         }
         reader.endCategory();
         for (var subCategory : deferredSubCategories) {
-            if (parentField == null) {
-                processCategoryMeta(subCategory.getBoundTo(), subCategory.getField(), categoryField);
-            } else {
-                Warnings.warn("Found double recursive sub category at " + subCategory);
-            }
+            processCategoryMeta(subCategory.getBoundTo(), subCategory.getField(), categoryField);
         }
     }
 
