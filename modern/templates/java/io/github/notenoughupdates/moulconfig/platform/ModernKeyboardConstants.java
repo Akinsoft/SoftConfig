@@ -10,42 +10,42 @@ public class ModernKeyboardConstants implements IKeyboardConstants {
 
     @Override
     public int getBackSpace() {
-        return InputConstants.KEY_BACKSPACE;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_BACKSPACE);
     }
 
     @Override
     public int getCtrlLeft() {
-        return InputConstants.KEY_LCONTROL;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_LCONTROL);
     }
 
     @Override
     public int getCtrlRight() {
-        return InputConstants.KEY_RCONTROL;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_RCONTROL);
     }
 
     @Override
     public int getCmdLeft() {
-        return InputConstants.#if MC > 12107 KEY_LSUPER #else KEY_LWIN #endif;
+        return ModernInputBridge.toLegacyKey(InputConstants.#if MC >= 260300 KEY_LGUI #elif MC > 12107 KEY_LSUPER #else KEY_LWIN #endif);
     }
 
     @Override
     public int getCmdRight() {
-        return InputConstants.#if MC > 12107 KEY_RSUPER #else KEY_RWIN #endif;
+        return ModernInputBridge.toLegacyKey(InputConstants.#if MC >= 260300 KEY_RGUI #elif MC > 12107 KEY_RSUPER #else KEY_RWIN #endif);
     }
 
     @Override
     public int getShiftLeft() {
-        return InputConstants.KEY_LSHIFT;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_LSHIFT);
     }
 
     @Override
     public int getShiftRight() {
-        return InputConstants.KEY_RSHIFT;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_RSHIFT);
     }
 
     @Override
     public int getEscape() {
-        return InputConstants.KEY_ESCAPE;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_ESCAPE);
     }
 
     @Override
@@ -55,76 +55,76 @@ public class ModernKeyboardConstants implements IKeyboardConstants {
 
     @Override
     public int getEnter() {
-        return InputConstants.KEY_RETURN;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_RETURN);
     }
 
     @Override
     public int getKeypadEnter() {
-        return InputConstants.KEY_NUMPADENTER;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_NUMPADENTER);
     }
 
     @Override
     public int getDelete() {
-        return InputConstants.KEY_DELETE;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_DELETE);
     }
 
     @Override
     public int getUp() {
-        return InputConstants.KEY_UP;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_UP);
     }
 
     @Override
     public int getDown() {
-        return InputConstants.KEY_DOWN;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_DOWN);
     }
 
     @Override
     public int getRight() {
-        return InputConstants.KEY_RIGHT;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_RIGHT);
     }
 
     @Override
     public int getLeft() {
-        return InputConstants.KEY_LEFT;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_LEFT);
     }
 
     @Override
     public int getHome() {
-        return InputConstants.KEY_HOME;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_HOME);
     }
 
     @Override
     public int getEnd() {
-        return InputConstants.KEY_END;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_END);
     }
 
     @Override
     public int getKeyA() {
-        return InputConstants.KEY_A;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_A);
     }
 
     @Override
     public int getKeyC() {
-        return InputConstants.KEY_C;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_C);
     }
 
     @Override
     public int getKeyX() {
-        return InputConstants.KEY_X;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_X);
     }
 
     @Override
     public int getKeyV() {
-        return InputConstants.KEY_V;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_V);
     }
 
     @Override
     public int getKeyN() {
-        return InputConstants.KEY_N;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_N);
     }
 
     @Override
     public int getKeyF() {
-        return InputConstants.KEY_F;
+        return ModernInputBridge.toLegacyKey(InputConstants.KEY_F);
     }
 }

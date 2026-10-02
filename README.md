@@ -15,9 +15,10 @@ SoftConfig 4.x is intended to remain compatible with MoulConfig 4.x. Existing pa
 | 1.21.11 | Active |
 | 26.1 | Active |
 | 26.2 | Active |
+| 26.3 | Active |
 | Other targets | Not actively supported; prior releases remain available |
 
-SoftConfig follows Hypixel SkyBlock's update rhythm and normally supports the latest two relevant Minecraft versions. The three active targets above cover the initial transition.
+SoftConfig follows Hypixel SkyBlock's update rhythm and normally supports the latest two relevant Minecraft versions. The active targets above retain older builds during the 26.3 transition.
 
 ## Installation
 
@@ -34,6 +35,8 @@ dependencies {
 ```
 
 Continue using your existing `include`, shadow, relocation, and access widener setup.
+
+For the 26.3 source target, toolchains, local publication and input compatibility, see [PORTING_26_3.md](PORTING_26_3.md).
 
 ## Migrating
 

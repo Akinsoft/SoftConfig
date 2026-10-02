@@ -67,8 +67,10 @@ tasks.withType<Detekt>().configureEach {
 }
 
 val prepareModernCheckstyleSource by tasks.registering(Sync::class) {
-    dependsOn(":modern:modern-26.2:compileJava")
-    from("modern/26.2/build/manifoldSourceDump")
+    val checkstyleTarget = providers.gradleProperty("softconfig.activeMinecraftVersions").get()
+        .split(",").map(String::trim).filter(String::isNotEmpty).last()
+    dependsOn(":modern:modern-$checkstyleTarget:compileJava")
+    from("modern/$checkstyleTarget/build/manifoldSourceDump")
     into(layout.buildDirectory.dir("checkstyle-modern-source"))
     filter { line: String -> line.trimEnd() }
 }

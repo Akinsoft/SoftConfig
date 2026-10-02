@@ -13,7 +13,9 @@ pluginManagement {
         maven {
             url = uri("https://repo.sk1er.club/repository/maven-releases/")
             content {
-                excludeGroup("xyz.wagyourtail.unimined.mapping")
+                includeGroup("gg.essential")
+                includeGroup("gg.essential.loom")
+                includeGroup("com.sparkuniverse")
             }
         }
 	}
