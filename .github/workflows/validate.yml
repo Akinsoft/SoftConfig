@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        minecraft: [1.21.11, 26.1, 26.2]
+        minecraft: [1.21.11, 26.1, 26.2, 26.3]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: ./.github/actions/setup-gradle

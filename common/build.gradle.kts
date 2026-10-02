@@ -50,14 +50,18 @@ publishing {
 }
 
 dokka {
-    val modern2611 = project(":modern:modern-26.1")
-    modern2611.afterEvaluate {
+    val documentationTarget = providers.gradleProperty("softconfig.activeMinecraftVersions").get()
+        .split(",").map(String::trim).filter(String::isNotEmpty).last()
+    val modernProject = project(":modern:modern-$documentationTarget")
+    modernProject.afterEvaluate {
         dokkaSourceSets.configureEach {
             val modernSource =
-                modern2611.sourceSets.main.map { it.allSource }
+                modernProject.sourceSets.main.map { it.allSource }
 //            sourceRoots.from(modernSource)
         }
     }
 }
 
 
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach { compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8) }

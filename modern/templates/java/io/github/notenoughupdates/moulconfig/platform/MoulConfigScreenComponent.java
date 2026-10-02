@@ -99,12 +99,21 @@ public class MoulConfigScreenComponent extends Screen {
     #else
     @Override
     public boolean keyPressed(KeyEvent input) {
+        #if MC >= 260300
+        int keyCode = ModernInputBridge.toLegacyKey(input.key());
+        int scanCode = input.key();
+        #else
         int keyCode = input.key();
         int scanCode = input.scancode();
+        #endif
     #endif
         if (guiContext.root.keyboardEvent(new KeyboardEvent.KeyPressed(keyCode, scanCode, true), createContext()))
             return true;
+        #if MC >= 260300
+        if (input.key() == InputConstants.KEY_ESCAPE) {
+        #else
         if (keyCode == InputConstants.KEY_ESCAPE) {
+        #endif
             if (guiContext.getFocusedElement() != null) {
                 guiContext.setFocusedElement(null);
             } else {
@@ -121,8 +130,13 @@ public class MoulConfigScreenComponent extends Screen {
     #else
     @Override
     public boolean keyReleased(KeyEvent input) {
+        #if MC >= 260300
+        int keyCode = ModernInputBridge.toLegacyKey(input.key());
+        int scanCode = input.key();
+        #else
         int keyCode = input.key();
         int scanCode = input.scancode();
+        #endif
     #endif
         return guiContext.root.keyboardEvent(
             new KeyboardEvent.KeyPressed(keyCode, scanCode, false),
@@ -156,14 +170,14 @@ public class MoulConfigScreenComponent extends Screen {
     @Override
     public boolean mouseClicked(#if MC < 12109 double mouseX, double mouseY, int button #else MouseButtonEvent click, boolean doubled #endif) {
         return guiContext.root.mouseEvent(
-            new MouseEvent.Click(#if MC < 12109 button #else click.button() #endif, true), createContext()
+            new MouseEvent.Click(#if MC < 12109 button #else ModernInputBridge.toLegacyMouseButton(click.button()) #endif, true), createContext()
         );
     }
 
     @Override
     public boolean mouseReleased(#if MC < 12109 double mouseX, double mouseY, int button #else MouseButtonEvent click #endif) {
         return guiContext.root.mouseEvent(
-            new MouseEvent.Click(#if MC < 12109 button #else click.button() #endif, false), createContext()
+            new MouseEvent.Click(#if MC < 12109 button #else ModernInputBridge.toLegacyMouseButton(click.button()) #endif, false), createContext()
         );
     }
 
