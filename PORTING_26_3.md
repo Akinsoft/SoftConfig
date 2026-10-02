@@ -85,7 +85,7 @@ search field closes on the first Escape; this port does not change that common
 architecture.
 
 All four production target remaps and authored checkstyle passed. The 24
-existing test cases report zero failures and one original chroma skip. The 26.3 test set includes
+test cases report zero failures and one original chroma skip. The 26.3 test set includes
 two native input bridge cases. Common behavioral sources and original resources
 remain unchanged. An actual screen-handler unit fixture could not compile
 because the existing test classpath excludes Minecraft screen classes; no
@@ -94,10 +94,11 @@ duplicated-condition test or dependency workaround was added.
 The consuming Skysoft JAR passed isolated cold startup, full required mixin
 audit, actual config GUI, native X11/SDL Escape, mouse toggle/restore and a
 visible fresh offline world using Minecraft's native screenshot function.
-The exact consumer also passed the combined-pack cold/post-world audits,
-config Escape and world checks. The combined run retained one unrelated
-unsupported operator-command failure, so it is not a cumulative-zero-failure
-claim; the corrected clean final run was still in progress when this evidence
-was recorded. OpenGL software rendering was used. Authenticated Hypixel
+The exact consumer also passed the corrected combined-pack cold/post-world
+audits, actual config GUI, native Escape and world checks with zero cumulative
+helper failures. Its final checkpoint recorded 12,779 frames in each shared
+Skyblocker and NoFrills GPU fixture; all 24 farm-key assertions passed. The
+preceding combined run's unrelated unsupported operator-command failure remains
+documented in its original evidence. OpenGL software rendering was used. Authenticated Hypixel
 gameplay, Vulkan/hardware GPU, other consumers, keybind-editor process-restart
 reload and native file-dialog behavior are not established by these checks.
