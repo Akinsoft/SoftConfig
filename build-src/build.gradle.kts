@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-	api("xyz.wagyourtail.unimined:unimined:1.4.2-20260814.024022-28")
+	api("xyz.wagyourtail.unimined:unimined:1.4.2-20260917.005300-29")
     implementation("net.fabricmc:class-tweaker:0.2")
     implementation("net.fabricmc:tiny-remapper:0.9.0")
     api("xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm:1.2.2")
