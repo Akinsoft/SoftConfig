@@ -1,6 +1,7 @@
 package io.github.notenoughupdates.moulconfig.gui.component
 
 import io.github.notenoughupdates.moulconfig.GuiTextures
+import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.gui.GuiComponent
 import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext
 import io.github.notenoughupdates.moulconfig.gui.MouseEvent
@@ -96,8 +97,9 @@ open class SliderComponent(
     }
 
     override fun mouseEvent(mouseEvent: MouseEvent, context: GuiImmediateContext): Boolean {
-        if (!context.renderContext.isMouseButtonDown(0)) clicked = false
-        if (context.isHovered && mouseEvent is MouseEvent.Click && mouseEvent.mouseState && mouseEvent.mouseButton == 0) {
+        val leftButton = IMinecraft.INSTANCE.mouseConstants.left()
+        if (!context.renderContext.isMouseButtonDown(leftButton)) clicked = false
+        if (context.isHovered && mouseEvent is MouseEvent.Click && mouseEvent.mouseState && mouseEvent.mouseButton == leftButton) {
             clicked = true
         }
         if (clicked) {

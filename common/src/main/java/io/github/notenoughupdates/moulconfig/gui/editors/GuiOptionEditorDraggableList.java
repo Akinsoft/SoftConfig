@@ -170,7 +170,7 @@ public class GuiOptionEditorDraggableList extends ComponentEditor {
                                 if (!canDeleteRightNow() || !context.isHovered()
                                     || !(mouseEvent instanceof MouseEvent.Click)
                                     || !((MouseEvent.Click) mouseEvent).getMouseState()
-                                    || ((MouseEvent.Click) mouseEvent).getMouseButton() != 0) {
+                                    || ((MouseEvent.Click) mouseEvent).getMouseButton() != IMinecraft.INSTANCE.getMouseConstants().left()) {
                                     return false;
                                 }
                                 openRemovalOverlay(activeText, GuiOptionEditorDraggableList.this::getExampleText, choice -> {

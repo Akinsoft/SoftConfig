@@ -15,7 +15,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOrder
 import io.github.notenoughupdates.moulconfig.observer.Property
-import org.lwjgl.glfw.GLFW
+import com.mojang.blaze3d.platform.InputConstants
 
 class TestCategoryA {
 
@@ -229,8 +229,8 @@ class TestCategoryA {
 
     @Expose
     @ConfigOption(name = "Keybind", desc = "The Number One")
-    @ConfigEditorKeybind(defaultKey = GLFW.GLFW_KEY_1)
-    var slot1: Int = GLFW.GLFW_KEY_1
+    @ConfigEditorKeybind(defaultKey = InputConstants.KEY_1)
+    var slot1: Int = InputConstants.KEY_1
 
 
     @Expose

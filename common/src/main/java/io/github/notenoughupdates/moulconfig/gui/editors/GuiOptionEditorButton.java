@@ -22,6 +22,7 @@ package io.github.notenoughupdates.moulconfig.gui.editors;
 
 import io.github.notenoughupdates.moulconfig.Config;
 import io.github.notenoughupdates.moulconfig.GuiTextures;
+import io.github.notenoughupdates.moulconfig.common.IMinecraft;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiComponent;
 import io.github.notenoughupdates.moulconfig.gui.GuiImmediateContext;
@@ -130,7 +131,7 @@ public class GuiOptionEditorButton extends ComponentEditor {
         public boolean mouseEvent(@NotNull MouseEvent mouseEvent, @NotNull GuiImmediateContext context) {
             if (mouseEvent instanceof MouseEvent.Click) {
                 val click = (MouseEvent.Click) mouseEvent;
-                if (click.getMouseState() && context.isHovered() && click.getMouseButton() == 0) {
+                if (click.getMouseState() && context.isHovered() && click.getMouseButton() == IMinecraft.INSTANCE.getMouseConstants().left()) {
                     onClick();
                     return true;
                 }

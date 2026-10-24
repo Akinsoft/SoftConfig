@@ -98,7 +98,7 @@ class GuiOptionEditorCombinations(
             if (
                 mouseEvent is MouseEvent.Click &&
                 mouseEvent.mouseState &&
-                mouseEvent.mouseButton == 0 &&
+                mouseEvent.mouseButton == IMinecraft.INSTANCE.mouseConstants.left() &&
                 context.mouseX in buttonLeft() until buttonLeft() + Dimensions.ADD_BUTTON_WIDTH &&
                 context.mouseY in 0 until Dimensions.ADD_BUTTON_HEIGHT
             ) {

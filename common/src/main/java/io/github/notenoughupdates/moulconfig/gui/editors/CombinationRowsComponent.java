@@ -21,6 +21,7 @@
 package io.github.notenoughupdates.moulconfig.gui.editors;
 
 import io.github.notenoughupdates.moulconfig.GuiTextures;
+import io.github.notenoughupdates.moulconfig.common.IMinecraft;
 import io.github.notenoughupdates.moulconfig.common.RenderContext;
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText;
 import io.github.notenoughupdates.moulconfig.gui.GuiComponent;
@@ -119,7 +120,7 @@ final class CombinationRowsComponent extends GuiComponent {
             return false;
         }
         MouseEvent.Click click = (MouseEvent.Click) mouseEvent;
-        if (!click.getMouseState() || click.getMouseButton() != 0) {
+        if (!click.getMouseState() || click.getMouseButton() != IMinecraft.INSTANCE.getMouseConstants().left()) {
             return false;
         }
         CombinationsLayout layout = createLayout();

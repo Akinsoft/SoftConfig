@@ -69,6 +69,8 @@ public interface IMinecraft {
 
     IKeyboardConstants getKeyboardConstants();
 
+    MouseConstants getMouseConstants();
+
     int getScaledWidth();
 
     int getScaledHeight();
@@ -81,6 +83,8 @@ public interface IMinecraft {
 
     boolean isKeyboardKeyDown(int keyCode);
 
+    default void startTextInput(Object owner, boolean focused) {}
+
     void addExtraBuiltinConfigProcessors(MoulConfigProcessor<?> processor);
 
     void sendClickableChatMessage(StructuredText message, String action, @Nullable ClickType clickType);
@@ -90,6 +94,8 @@ public interface IMinecraft {
     }
 
     StructuredText getKeyName(int keyCode);
+
+    int getMouseButtonKeyCode(int mouseButton);
 
     StructuredText.Mutable createLiteral(String text);
 

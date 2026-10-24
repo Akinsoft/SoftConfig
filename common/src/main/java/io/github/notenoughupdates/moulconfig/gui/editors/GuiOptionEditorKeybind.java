@@ -74,12 +74,11 @@ public class GuiOptionEditorKeybind extends ComponentEditor {
                 MouseEvent.Click click = (MouseEvent.Click) mouseEvent;
                 if (click.getMouseState() && click.getMouseButton() != -1 && editingKeycode) {
                     editingKeycode = false;
-                    int mouseButton = click.getMouseButton();
-                    option.set(mouseButton); // TODO: make this distinct. This is also different from the way 1.8.9 handles those keybindings, so this class is incompatible right now. A "proper" way to do this would be to make a Keybinding class that stores both the button and whether this is a mouse or keyboard button, with some version specific helpers to test if an event matches.
+                    option.set(IMinecraft.INSTANCE.getMouseButtonKeyCode(click.getMouseButton())); // TODO: make this distinct. This is also different from the way 1.8.9 handles those keybindings, so this class is incompatible right now. A "proper" way to do this would be to make a Keybinding class that stores both the button and whether this is a mouse or keyboard button, with some version specific helpers to test if an event matches.
                     return true;
                 }
 
-                if (click.getMouseState() && click.getMouseButton() == 0) {
+                if (click.getMouseState() && click.getMouseButton() == IMinecraft.INSTANCE.getMouseConstants().left()) {
                     int height = getHeight();
                     int width = getHeight();
                     int mouseX = context.getMouseX();

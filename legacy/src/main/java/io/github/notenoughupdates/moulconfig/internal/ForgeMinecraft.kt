@@ -156,6 +156,10 @@ class ForgeMinecraft : IMinecraft {
         return StructuredText.of(KeybindHelper.getKeyName(keyCode))
     }
 
+    override fun getMouseButtonKeyCode(mouseButton: Int): Int {
+        return mouseButton - 100
+    }
+
     override fun createLiteral(text: String): StructuredText.Mutable {
         return StructuredTextImpl.wrap(ChatComponentText(text))
     }
@@ -252,5 +256,9 @@ class ForgeMinecraft : IMinecraft {
 
     override fun getKeyboardConstants(): IKeyboardConstants {
         return ForgeKeyboardConstants
+    }
+
+    override fun getMouseConstants(): MouseConstants {
+        return ForgeMouseConstants.INSTANCE
     }
 }

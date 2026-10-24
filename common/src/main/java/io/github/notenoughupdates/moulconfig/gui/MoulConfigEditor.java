@@ -953,7 +953,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
 
             searchField.setFocus(searchIconFocus);
 
-            if (searchIconFocus && mouseButton == 1) {
+            if (searchIconFocus && mouseButton == IMinecraft.INSTANCE.getMouseConstants().right()) {
                 searchField.getText().set("");
                 updateSearchResults();
             }
@@ -965,7 +965,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 if (mouseX >= optsInnerRight - 25 - len && mouseX <= optsInnerRight - 25 &&
                     mouseY >= innerTop - (20 + innerPadding) / 2 - 9 && mouseY <= innerTop - (20 + innerPadding) / 2 + 9) {
 
-                    if (mouseButton == 1) {
+                    if (mouseButton == IMinecraft.INSTANCE.getMouseConstants().right()) {
                         searchField.getText().set("");
                         updateSearchResults();
                     }
@@ -1128,7 +1128,7 @@ public class MoulConfigEditor<T extends Config> extends GuiElement implements Cl
                 optionsScroll.resetTimer();
                 optionsScroll.setTarget(newTarget);
             }
-        } else if (mouseState && ((MouseEvent.Click) mouseEvent).getMouseButton() == 0) {
+        } else if (mouseState && ((MouseEvent.Click) mouseEvent).getMouseButton() == IMinecraft.INSTANCE.getMouseConstants().left()) {
             if (getCurrentlyVisibleCategories() != null) {
                 int catY = -categoryScroll.getValue();
                 for (Map.Entry<String, ProcessedCategory> entry : getCurrentlyVisibleCategories().entrySet()) {

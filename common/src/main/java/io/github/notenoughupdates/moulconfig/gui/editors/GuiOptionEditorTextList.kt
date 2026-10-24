@@ -606,7 +606,8 @@ class GuiOptionEditorTextList(
 
         override fun mouseEvent(mouseEvent: MouseEvent, context: GuiImmediateContext): Boolean {
             if (
-                mouseEvent !is MouseEvent.Click || !mouseEvent.mouseState || mouseEvent.mouseButton != 0 ||
+                mouseEvent !is MouseEvent.Click || !mouseEvent.mouseState ||
+                mouseEvent.mouseButton != IMinecraft.INSTANCE.mouseConstants.left() ||
                 !context.isHovered || model.entries.isEmpty()
             ) {
                 return false
@@ -665,9 +666,10 @@ class GuiOptionEditorTextList(
                 -1
             }
             val entry = model.entries.getOrNull(index) ?: return false
+            val mouseConstants = IMinecraft.INSTANCE.mouseConstants
             return when (mouseEvent.mouseButton) {
-                0 -> didHandleLeftClick(context, entry, index)
-                1 -> didHandleRightClick(context, entry)
+                mouseConstants.left() -> didHandleLeftClick(context, entry, index)
+                mouseConstants.right() -> didHandleRightClick(context, entry)
                 else -> false
             }
         }

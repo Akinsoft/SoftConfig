@@ -7,11 +7,20 @@ import net.minecraft.client.input.KeyEvent;
 #endif
 
 public class ModernKeybindHelper {
+    #if MC >= 260300
+    private static final int MOUSE_BUTTON_KEY_CODE_OFFSET = -100;
+    #endif
+
     public static StructuredText getKeyName(int keyCode) { // TODO: translations
-        if (keyCode == -1) {
+        if (keyCode == InputConstants.UNKNOWN.getValue()) {
             return StructuredText.of("NONE");
+        #if MC >= 260300
+        } else if (keyCode < 0) {
+            return StructuredText.of("Button " + (keyCode - MOUSE_BUTTON_KEY_CODE_OFFSET));
+        #else
         } else if (keyCode >= 0 && keyCode <= 9) {
             return StructuredText.of("Button " + (keyCode + 1));
+        #endif
         } else {
             #if MC < 12109
             StructuredText keyName = MoulConfigText.wrap(InputConstants.getKey(keyCode, 0).getDisplayName());
@@ -23,5 +32,13 @@ public class ModernKeybindHelper {
             }
             return keyName;
         }
+    }
+
+    public static int getMouseButtonKeyCode(int mouseButton) {
+        #if MC >= 260300
+        return mouseButton + MOUSE_BUTTON_KEY_CODE_OFFSET;
+        #else
+        return mouseButton;
+        #endif
     }
 }
