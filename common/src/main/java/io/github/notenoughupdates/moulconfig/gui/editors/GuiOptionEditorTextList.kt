@@ -20,7 +20,6 @@
 
 package io.github.notenoughupdates.moulconfig.gui.editors
 
-import io.github.notenoughupdates.moulconfig.ChromaColour
 import io.github.notenoughupdates.moulconfig.GuiTextures
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.common.KeyboardConstants
@@ -176,15 +175,11 @@ class GuiOptionEditorTextList(
     }
 
     private fun openColourPicker(entry: TextListEntry, context: GuiImmediateContext) {
-        @Suppress("DEPRECATION")
         val picker = ColorSelectComponent(
             0,
             0,
-            entry.colour.toLegacyString(),
-            { value ->
-                @Suppress("DEPRECATION")
-                model.setColour(entry, ChromaColour.forLegacyString(value))
-            },
+            entry.colour,
+            { value -> model.setColour(entry, value) },
             ::closeOverlay,
         )
         val minecraft = context.renderContext.minecraft

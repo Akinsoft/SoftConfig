@@ -134,6 +134,24 @@ public class ColorSelectComponent extends GuiComponent {
         if (!opacitySlider) xSize -= 15;
     }
 
+    public ColorSelectComponent(
+        int x, int y, ChromaColour initialColour, Consumer<ChromaColour> colourChangedCallback,
+        Runnable closeCallback
+    ) {
+        this(x, y, initialColour, colourChangedCallback, closeCallback, true, true);
+    }
+
+    public ColorSelectComponent(
+        int x, int y, ChromaColour initialColour, Consumer<ChromaColour> colourChangedCallback,
+        Runnable closeCallback, boolean opacitySlider, boolean valueSlider
+    ) {
+        this(
+            x, y, initialColour.toLegacyString(),
+            colour -> colourChangedCallback.accept(ChromaColour.forLegacyString(colour)),
+            closeCallback, opacitySlider, valueSlider
+        );
+    }
+
     public void updateAngleAndRadius(float[] hsv) {
         this.wheelRadius = hsv[1];
         this.wheelAngle = hsv[0] * 360;
